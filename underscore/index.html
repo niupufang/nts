@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>UnderScore</title>
+</head>
+<body>
+
+    <div style="height:1000px;"></div>
+
+<script type="text/javascript" src="js/underscore.js"></script>
+<script type="text/javascript" src="../jquery/jquery-2.1.1.js"></script>
+<script type="text/javascript">
+    var url = location.href,
+            paramstring = url.substring(url.indexOf('?') + 1);
+
+    var params = paramstring.split('&'), paramsObject = {};
+
+    for (var i = 0, len = params.length; i < len; i++)
+    {
+        var paramsSplit = params[i],
+                ps = paramsSplit.split('=');
+
+        paramsObject[ps[0]] = ps[1];
+    }
+
+    if (paramsObject['js'])
+    {
+        document.write('<script type="text/javascript" src="js/' + paramsObject['js'] + '.js"><\/script>')
+    }
+
+</script>
+
+</body>
+</html>
