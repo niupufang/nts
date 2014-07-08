@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>BootStrap</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Form Example</h2>
+
+    <form class="form-horizontal">
+
+        <div class="form-group">
+            <label for="username" class="control-label col-md-2">Username</label>
+
+            <div class="col-md-10">
+                <input type="text" name="username" placeholder="e.g username" class="form-control"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="control-label col-md-2">Password</label>
+
+            <div class="col-md-10">
+                <input type="password" name="password" placeholder="e.g password" class="form-control"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="hoboy" class="control-label col-md-2">Hoboy</label>
+
+            <div class="col-md-10">
+                <select name="hoboy" class="form-control">
+                    <option>web</option>
+                    <option>Java</option>
+                    <option>PHP</option>
+                    <option>Linux</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="guest" class="control-label col-md-2">Guest</label>
+
+            <div class="col-md-10">
+                <textarea type="text" name="guest" placeholder="e.g textarea" class="form-control"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="time" class="control-label col-md-2">Time</label>
+
+            <div class="col-md-10">
+                <input type="date" name="time" placeholder="time clock" class="form-control"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input type="submit" class="btn btn-primary" value="Submit"/>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script type="text/javascript" src="../jquery/jquery-2.1.1.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+
+</body>
+</html>
