@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery 动画深入 SHOW</title>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/css/bootstrap.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>First Title</h2>
+
+    <button class="btn btn-success" id="clickMe">Click Me</button>
+
+    <p id="box">
+
+    <div class="well">
+        <h3>动画文字</h3>
+        <img src="../../bootstrap/images/baiduoffice.jpg">
+    </div>
+
+    </p>
+</div>
+
+<script type="text/javascript" src="../jquery-2.1.1.js"></script>
+<script type="text/javascript">
+
+    var box = $('.well');
+    $('#clickMe').click(function ()
+    {
+        box.toggle('slow');
+    });
+
+
+    if (false) //原谅我这样注释代码
+    {
+        $('#clickMe').click(function ()
+        {
+            var isVisable = box.css('display');
+
+            console.log(isVisable);
+
+            if (isVisable === 'none')
+            {
+                //box.show('fast');
+                //box.show('slow');
+                box.show(3000);
+            }
+            else
+            {
+                //box.hide('fast');
+                //box.hide('slow');
+                box.hide(3000);
+            }
+        });
+    }
+
+
+</script>
+
+</body>
+</html>

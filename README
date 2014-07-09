@@ -1,8 +1,9 @@
-这是一个对于前端技术探索的项目，目前包括以下：
+这是一个扩充前端视野的项目，目前包括以下主题：
 
-1.understore
-2.webSQL
+1.Understore
+2.WebSQL
 3.Bootstrap
+4.JQuery Animation
 
 未完待续，持续更新
 
@@ -13,6 +14,8 @@ Log:
     --2.开始bootstrap ->Basic CSS
 214.07.08
     --1.Bootstrap的Component
+    --2.完善underscore的collection,underscore结束
+    --3.开始jQuery Animation ->show fade slide
 
 
 

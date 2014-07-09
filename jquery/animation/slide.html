@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery 动画深入 Slide</title>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/css/bootstrap.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>First Title</h2>
+
+    <button class="btn btn-success" id="clickMe">Click Me</button>
+    <button class="btn btn-warning" id="stopTimer">Stop Timer</button>
+
+    <p id="box">
+
+    <div class="well">
+        <h3>动画文字</h3>
+        <img src="../../bootstrap/images/baiduoffice.jpg">
+    </div>
+
+    </p>
+</div>
+
+<script type="text/javascript" src="../jquery-2.1.1.js"></script>
+<script type="text/javascript">
+
+    $(function ()
+    {
+        var box = $('.well');
+
+        if (false)
+        {
+            $('#clickMe').click(function ()
+            {
+                box.slideToggle('slow');
+            });
+        }
+
+        $('#clickMe').click(function ()
+        {
+            var isVisable = box.css('display');
+
+            if (isVisable === 'none')
+            {
+                box.slideDown(1000);
+            }
+            else
+            {
+                box.slideUp(1000);
+            }
+        });
+
+    });
+
+
+</script>
+
+</body>
+</html>
