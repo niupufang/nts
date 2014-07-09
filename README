@@ -1,8 +1,8 @@
-这是一个对于前端新技术探索的项目，目前包括以下：
+这是一个对于前端技术探索的项目，目前包括以下：
 
 1.understore
 2.webSQL
-3.
+3.Bootstrap
 
 未完待续，持续更新
 
@@ -11,6 +11,8 @@ Log:
 2014.07.08
     --1.完善underscore的utilities
     --2.开始bootstrap ->Basic CSS
+214.07.08
+    --1.Bootstrap的Component
 
 
 
