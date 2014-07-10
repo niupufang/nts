@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery 动画深入 缓动函数</title>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/css/bootstrap.css">
+
+    <style type="text/css">
+
+        body {
+            margin-top: 220px;
+        }
+
+        #myImg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="firsttitle">First Title</h2>
+
+    <button class="btn btn-success" id="clickMe">Another Option</button>
+
+    <img src="../../bootstrap/images/baiduoffice.jpg" id="myImg">
+
+</div>
+
+<script src="../jquery-2.1.1.js"></script>
+<!--<script src="../jquery-ui.js"></script>-->
+<script src="../jquery.easing.1.3.js"></script>
+<script>
+
+    // http://easings.net/zh-cn 缓动函数速查
+    // jQuery 只支持swing和linear两种缓存函数，所以只有加入插件才能实现 上面网址上的一些效果
+    // jQuery UI 实现了所有，jquery.easing.1.3.js这个插件也实现了
+    // 也可以自己去实现一些函数
+
+    jQuery.extend(jQuery.easing, {
+        lonelyClickEaseOutBack: function (x, t, b, c, d, s)
+        {
+            if (s == undefined)
+            {
+                s = 14.70158;
+            }
+            return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b;
+        }
+    });
+
+    $(function ()
+    {
+        $('#clickMe').click(function ()
+        {
+            $('#myImg').animate({left: 500}, 3000, 'lonelyClickEaseOutBack');
+        });
+    });
+</script>
+
+</body>
+</html>

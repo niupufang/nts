@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery 动画深入 Animation Function</title>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/css/bootstrap.css">
+
+    <style type="text/css">
+        #myImg {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="firsttitle">First Title</h2>
+
+    <button class="btn btn-success" id="clickMe">Another Option</button>
+    <button class="btn btn-info" id="chain">Chain</button>
+    <button class="btn btn-warning" id="stop">Stop</button>
+
+
+    <img src="../../bootstrap/images/baiduoffice.jpg" id="myImg">
+
+</div>
+
+<script type="text/javascript" src="../jquery-2.1.1.js"></script>
+<script type="text/javascript">
+
+    $(function ()
+    {
+        $('#myImg').animate({
+            right: 300,
+            top: 100,
+            opacity: 0.1
+        }, 2000, 'linear', function ()
+        {
+            alert('completed');
+        });
+
+        // 有两种选择，linera和swing
+        //$('.firsttitle').animate({fontSize: '88px'}, 2000);
+
+        $('#clickMe').click(function ()
+        {
+            $('#myImg').css(
+                    {
+                        right: 0,
+                        top: 0,
+                        opacity: 1
+                    }
+            );
+
+            $('#myImg').animate(
+                    {
+                        right: 300,
+                        top: 100
+                    },
+                    {
+                        duration: 2000,
+                        specialEasing: { //可以单独制定每个指标运用的easeing函数
+                            right: 'linear',
+                            top: 'swing'
+                        },
+                        step: function (now, tween)
+                        {
+                            console.log(now); //now 指现在正在变化的指标的大小
+                        },
+                        progress: function (promise, progress, remainingMs)
+                        {
+                            // 进度，剩余的时间
+                            console.log('---------------------', progress, remainingMs);
+                        },
+
+                        complete: function ()
+                        {
+                            console.log('done');
+                        },
+
+                        start: function ()
+                        {
+                            console.log('start');
+                        }
+                    }
+            );
+
+        });
+
+        //停止动画
+        $('#stop').click(function ()
+        {
+            $('#myImg').stop(true, true);
+        });
+
+        //链式调用
+        $('#chain').click(function ()
+        {
+            $('#myImg').css(
+                    {
+                        right: 0,
+                        top: 0,
+                        opacity: 1
+                    }
+            ).delay(1000).hide(1000).queue(function ()
+                    {
+                        $(this).dequeue();
+                    }).show(1000).
+                    animate({right: 300, top: 100}, 5000).animate({top: '-=50'}, 1000);
+        });
+
+
+    });
+
+
+</script>
+
+</body>
+</html>
