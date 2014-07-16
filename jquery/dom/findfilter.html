@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery选择器</title>
+</head>
+<body>
+
+<div id="people">
+    <div class="ex1">ex1</div>
+    <div class="ex1">ex2</div>
+    <div class="ex3">ex3</div>
+</div>
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+
+    $(function () {
+
+        var people = $('#people div');
+
+        console.log(people.find('.ex1'));
+        console.log(people.filter('.ex1'));
+
+
+        $('#people').css('color', 'red')
+                .find('div.ex1')
+                .css('color', 'blue')
+                .css('font-family', '微软雅黑')
+                .end()
+                .css('background', '#aaa');
+    });
+
+
+</script>
+</body>
+</html>

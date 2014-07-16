@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery 动画深入 Color Plugin</title>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/font-awesome-4.1.0/css/font-awesome.css">
+
+    <style type="text/css">
+
+        body {
+            background: #aaa;
+        }
+
+        #shoppingcart {
+            position: absolute;
+            top: 100;
+            left: 300;
+            height: 50px;
+            width: 200px;
+            border: 2px solid blue;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 45px;
+            background: red;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="firsttitle">First Title</h2>
+
+    <div id="shoppingcart">
+        <i class="fa fa-shopping-cart"></i> <span>Shopping Cart</span>
+    </div>
+
+</div>
+
+<script type="text/javascript" src="../jquery-2.1.1.js"></script>
+<script type="text/javascript" src="../jquery.color.src.js"></script>
+<script type="text/javascript">
+
+    // http://gradientcss.com/
+
+    $(function () {
+
+        setInterval(function () {
+            $({t: -30}).animate({t: 260},
+                    {duration: 2000,
+                        step: function (now) {
+                            $('#shoppingcart').css('background', 'radial-gradient(circle 60px at ' + now + 'px 30px , #ffaaaa,red');
+                        }});
+        }, 8000);
+
+
+    });
+
+
+</script>
+
+</body>
+</html>

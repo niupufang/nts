@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery 动画深入 Promise</title>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/css/bootstrap.css">
+
+    <style type="text/css">
+        #backbone {
+            position: absolute;
+            top: 100;
+            right: 300;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="firsttitle">First Title</h2>
+
+    <button class="btn btn-success" id="btn">Stop Me</button>
+
+    <img src="../../bootstrap/images/backbone.png" alt="backbone" id="backbone" style="-webkit-transform:scale(0.5)">
+
+</div>
+
+<script type="text/javascript" src="../jquery-2.1.1.js"></script>
+<script type="text/javascript" src="../jquery.color.src.js"></script>
+<script type="text/javascript">
+
+    $(function () {
+
+        $('#btn').click(function () {
+
+            $('#backbone').stop();
+
+        });
+
+        $('#backbone').animate({right: 100}, {
+            duration: 3000,
+
+            done: function () {
+                alert('done');
+            },
+
+            always: function () {
+                alert('always');
+            },
+
+            fail: function () {
+                alert('fail');
+            }
+        });
+    });
+
+
+</script>
+
+</body>
+</html>

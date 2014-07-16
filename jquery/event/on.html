@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery ON</title>
+    <link rel="stylesheet" href="../../bootstrap/css/bootstrap.css">
+</head>
+<body>
+
+<ul id="userList">
+    <li><a href="##">item1</a></li>
+    <li><a href="##">item2</a></li>
+    <li><a href="##">item3</a></li>
+    <li><a href="##">item4</a></li>
+    <li><a href="##">item5</a></li>
+</ul>
+
+<button class="btn btn-success" id="insert">插入</button>
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+    $(function () {
+
+        // see :: http://www.cnblogs.com/piercalex/archive/2013/03/30/2990679.html
+
+        var userList = $('#userList'), i = 6;
+
+        $('#insert').on('click', function () {
+            $('<li><a href="###">item' + i++ + '</a> </li>').appendTo(userList);
+        });
+
+        if (false) {
+
+            // on 已经替代了 live bind delegate
+            userList.find('li a').on('click', function () {
+                alert($(this).text());
+            });
+
+            // 事件委托机制
+            $('#userList').on('click', 'li a', function () {
+                alert($(this).text());
+            });
+
+            $(document).on('click', '#userList li a', function () {
+                alert($(this).text());
+            });
+
+            $(document).delegate('#userList li a', 'click', function () {
+                alert($(this).text());
+            });
+        }
+        userList.find('li a').on('click', function () {
+            alert($(this).text());
+        });
+
+
+
+    });
+
+</script>
+</body>
+</html>

@@ -4,22 +4,19 @@
 2.WebSQL
 3.Bootstrap
 4.JQuery Animation
+5.JQuery Event
 
-未完待续，持续更新
+接下来的计划：
 
-Log:
+a.jQuery
+1、分析jQuery的Callback源代码
+2、分析jQuery的Defered源代码
+3、分析jQuery的Animation源代码
+4、分析jQuery的DOM与Event源代码
+5、开始jQuery的Ajax深入学习
 
-2014.07.08
-    --1.完善underscore的utilities
-    --2.开始bootstrap ->Basic CSS
-2014.07.09
-    --1.Bootstrap的Component
-    --2.完善underscore的collection,underscore结束
-    --3.开始jQuery Animation ->show fade slide
-2014.07.10
-    --1.Bootstrap Plugin,Bootstrap结束
-    --2.jQuery Animattion -> animate function and easing deep
-
-
-
-
+b.Backbone
+    underscore已完，为backbone打下了基础，就剩下开始了
+c.less sass
+d.coffeescript
+e.requirejs
