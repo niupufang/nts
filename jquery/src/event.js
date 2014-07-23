@@ -27,27 +27,50 @@ jQuery.event = {
             elemData = jQuery._data(elem);
 
         // Don't attach events to noData or text/comment nodes (but allow plain objects)
+        // 从data代码可知，nodeType === 1 or nodeType === 9 or plainObject
         if (!elemData) {
             return;
         }
 
+//        $('#dom').on('click', {
+//            handler: function () {
+//            alert(1);
+//        }, selector: '#box'}, {data1: 'data1'})
+
         // Caller can pass in an object of custom data in lieu of the handler
+        // 修正将handler和selector写在一块的情况
         if (handler.handler) {
             handleObjIn = handler;
             handler = handleObjIn.handler;
             selector = handleObjIn.selector;
         }
 
-//        $('#dom').on('click', {handle: function () {
-//            alert(1);
-//        }, selector: '#box'}, {data1: 'data1'})
-
         // Make sure that the handler has a unique ID, used to find/remove it later
+        // 在handler函数上加一个唯一的ID，便于识别
         if (!handler.guid) {
             handler.guid = jQuery.guid++;
         }
 
         // Init the element's event structure and main handler, if this is the first
+
+        /**
+         * jQuery.cache = {
+         *      1:{
+         *            data:
+         *            {
+         *              events:
+         *              {
+         *
+         *              },
+         *              handle: function ()
+         *              {
+         *
+         *              },--> [elem]= elem;
+         *            }
+         *        }
+         * };
+         */
+
         if (!(events = elemData.events)) { //初始化
             events = elemData.events = {};
         }
@@ -68,9 +91,13 @@ jQuery.event = {
 
         // Handle multiple events separated by a space
         // jQuery(...).bind("mouseover mouseout", fn);
+        // types = ['mouseover','mouseout']
         types = ( types || "" ).match(core_rnotwhite) || [""];
         t = types.length;
         while (t--) {
+
+            // rtypenamespace = /^([^.]*)(?:\.(.+)|)$/;
+
             tmp = rtypenamespace.exec(types[t]) || [];
             type = origType = tmp[1];
             namespaces = ( tmp[2] || "" ).split(".").sort();
@@ -455,6 +482,7 @@ jQuery.event = {
     },
 
     fix: function (event) {
+        // 如果已经是jQuery.Event，那么直接返回
         if (event[ jQuery.expando ]) {
             return event;
         }
@@ -465,6 +493,7 @@ jQuery.event = {
             originalEvent = event,
             fixHook = this.fixHooks[ type ];
 
+        //通过事件的类型判断是鼠标事件（左右）还是键盘事件
         if (!fixHook) {
             this.fixHooks[ type ] = fixHook =
                 rmouseEvent.test(type) ? this.mouseHooks :
@@ -487,6 +516,22 @@ jQuery.event = {
             event.target = originalEvent.srcElement || document;
         }
 
+        /**
+         *target是触发的DOM元素
+          currentTarget 是绑定事件的元素，等同于this
+          relatedTarget 移入移出相关的元素
+          <div> <span></span></div>
+          $('div').on('click',function (e) {
+              console.log(e.target); // 点击span元素时是SPANelement,点击DIV元素时是DivElement
+              console.log(e.currentTarget); //都是DIVElement
+          });
+
+         $('div').on('mouseover',function (e) {
+              console.log(e.relatedTarget);
+          });
+         */
+
+
         // Support: Chrome 23+, Safari?
         // Target should not be a text node (#504, #13143)
         if (event.target.nodeType === 3) {
@@ -505,11 +550,17 @@ jQuery.event = {
 
     fixHooks: {},
 
+    /**
+     * 兼容键盘which
+     */
     keyHooks: {
         props: "char charCode key keyCode".split(" "),
         filter: function (event, original) {
 
             // Add which for key events
+            // which 可以在键盘或者鼠标点击的按钮
+            // 鼠标：左键是1 中键是2，右键是3
+            // 键盘：对象charCode或者keyCode
             if (event.which == null) {
                 event.which = original.charCode != null ? original.charCode : original.keyCode;
             }
@@ -526,6 +577,9 @@ jQuery.event = {
                 fromElement = original.fromElement;
 
             // Calculate pageX/Y if missing and clientX/Y available
+            // 兼容clientX和pageX
+            // see:: http://www.cnblogs.com/yehuabin/archive/2013/03/07/2946004.html
+            //
             if (event.pageX == null && original.clientX != null) {
                 eventDoc = event.target.ownerDocument || document;
                 doc = eventDoc.documentElement;
@@ -542,6 +596,9 @@ jQuery.event = {
 
             // Add which for click: 1 === left; 2 === middle; 3 === right
             // Note: button is not normalized, so don't use it
+
+            // see:: http://www.cnblogs.com/rubylouvre/archive/2009/08/24/1552862.html
+
             if (!event.which && button !== undefined) {
                 event.which = ( button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) ) );
             }
@@ -646,8 +703,15 @@ jQuery.removeEvent = document.removeEventListener ?
         }
     };
 
+// jQuery.Event 构造函数
+// 1.处理不用new关键字的构造
+// 2.将浏览器event对象存入到originalEvent中
+// 3.处理isDefaultPrevented，是否已经阻止浏览器默认事件触发
+// 4.将props对象apply到jQuery.Event对象上去
+// 5.修正timeStamp，设置jQuery.expando
 jQuery.Event = function (src, props) {
     // Allow instantiation without the 'new' keyword
+    // 可以直接 var jQueryEvent = jQuery.Event(originEvent,{});
     if (!(this instanceof jQuery.Event)) {
         return new jQuery.Event(src, props);
     }
@@ -659,6 +723,7 @@ jQuery.Event = function (src, props) {
 
         // Events bubbling up the document may have been marked as prevented
         // by a handler lower down the tree; reflect the correct value.
+        // 判断是否已经e.preventDefault() 或者returnValue === false
         this.isDefaultPrevented = ( src.defaultPrevented || src.returnValue === false ||
             src.getPreventDefault && src.getPreventDefault() ) ? returnTrue : returnFalse;
 
@@ -668,20 +733,27 @@ jQuery.Event = function (src, props) {
     }
 
     // Put explicitly provided properties onto the event object
+    // 把props的值设置到jQuery.Event对象中
     if (props) {
         jQuery.extend(this, props);
     }
 
     // Create a timestamp if incoming event doesn't have one
+    // 修正timeStamp，在W3C规范中，是有的timeStamp的，但是IE9以下没有
     this.timeStamp = src && src.timeStamp || jQuery.now();
 
     // Mark it as fixed
+    // jQuery.Event[$.expando] = true;
     this[ jQuery.expando ] = true;
 };
 
 // jQuery.Event is based on DOM3 Events as specified by the ECMAScript Language Binding
 // http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331/ecma-script-binding.html
+// jQuery.Event.prototype 主要修正了3个DOM3事件方法
+// preventDefault / stopPropagation / stopImmediatePropagation
 jQuery.Event.prototype = {
+
+    // 默认阻止浏览器事件，默认阻止冒泡，默认阻止立即冒泡 都是returnFalse的
     isDefaultPrevented: returnFalse,
     isPropagationStopped: returnFalse,
     isImmediatePropagationStopped: returnFalse,
@@ -690,6 +762,7 @@ jQuery.Event.prototype = {
         var e = this.originalEvent;
 
         this.isDefaultPrevented = returnTrue;
+        //如果没有浏览器原生事件对象，跳出
         if (!e) {
             return;
         }
@@ -701,10 +774,12 @@ jQuery.Event.prototype = {
 
             // Support: IE
             // Otherwise set the returnValue property of the original event to false
+            // IE Fixed
         } else {
             e.returnValue = false;
         }
     },
+
     stopPropagation: function () {
         var e = this.originalEvent;
 
@@ -713,16 +788,53 @@ jQuery.Event.prototype = {
             return;
         }
         // If stopPropagation exists, run it on the original event
+        // W3C 标准
         if (e.stopPropagation) {
             e.stopPropagation();
         }
 
         // Support: IE
         // Set the cancelBubble property of the original event to true
+        // 在一些浏览器中，stopPropagation方法执行之后，cancelBubble还是会为false，这里统一设置成true
         e.cancelBubble = true;
     },
+
+    /**
+     * 停止该元素上同一种时间类型的所有绑定事件
+     *
+     * $('div').on('click',function (e) {
+     *      e.stopPropagation();
+     *      alert('div1'); // 弹出
+     * });
+     *
+     * $('div').on('click',function (e) {
+     *      //e.stopPropagation();
+     *      alert('div2'); //弹出
+     * });
+     *
+     *
+     * $('div').on('click',function (e) {
+     *      e.stopImmediatePropagation();
+     *      alert('div1'); // 弹出
+     * });
+     *
+     * $('div').on('click',function (e) {
+     *      //e.stopImmediatePropagation();
+     *      alert('div2'); //不会弹出
+     * });
+     */
     stopImmediatePropagation: function () {
+
+        //这里没有用w3c的stopImmediatePropagation，有待研究
         this.isImmediatePropagationStopped = returnTrue;
+        this.stopPropagation();
+
+        // 在1.11.1版本，是如下实现
+        var e = this.originalEvent;
+        this.isImmediatePropagationStopped = returnTrue;
+        if (e && e.stopImmediatePropagation) {
+            e.stopImmediatePropagation();
+        }
         this.stopPropagation();
     }
 };
@@ -887,46 +999,68 @@ if (!jQuery.support.focusinBubbles) {
 
 jQuery.fn.extend({
 
+    //向外暴露的方法，one是个内部调用参数，用于重新封装one注册事件
+    //types可以传入一个事件的对象，selector是事件委托机制的代理元素，data是附加到event上的属性，fn是回调函数
     on: function (types, selector, data, fn, /*INTERNAL*/ one) {
         var type, origFn;
+
+        //types是个object的情况
+        //$('...').on({click:function () {},keyup:function () {}},'#userList li a',{someattr:'value',a:''});
 
         // Types can be a map of types/handlers
         if (typeof types === "object") {
             // ( types-Object, selector, data )
             if (typeof selector !== "string") {
+                // 处理没有selector的时候
+                //  $('...').on({click:function () {},keyup:function () {}},null,{someattr:'value',a:''});
+                //  $('...').on({click:function () {},keyup:function () {}},{someattr:'value',a:''});
                 // ( types-Object, data )
-                data = data || selector;
+                data = data || selector; // selector没有传入，data位置错位
                 selector = undefined;
             }
+
+            //遍历types对象，逐个递归
             for (type in types) {
                 this.on(type, selector, data, types[ type ], one);
             }
             return this;
         }
 
+        // $('#box').on('click',function () {});
+        // 不传入data和fn，就是上面这种形式调用
         if (data == null && fn == null) {
             // ( types, fn )
             fn = selector;
             data = selector = undefined;
         } else if (fn == null) {
+            // 如果fn不传入，那么data肯定是fn，selector可能是selector或者data
+            // 如果selector是字符串，那么就判断为selector，data为空
             if (typeof selector === "string") {
                 // ( types, selector, fn )
-                fn = data;
+                fn = data;                  //-->>
                 data = undefined;
             } else {
+                // 如果不是字符串，说明selector是data
                 // ( types, data, fn )
-                fn = data;
+                fn = data;                  //-->>
                 data = selector;
                 selector = undefined;
             }
         }
+        //以上是处理参数传递问题，on的各种参数修正完毕
+
+        //如果fn传入的是false，将fn设置为只返回false的函数
+        // returnFalse = function (){return false;}
         if (fn === false) {
             fn = returnFalse;
+            //如果没有传入fn，则直接返回jQuery对象
         } else if (!fn) {
             return this;
         }
 
+        //处理one事件的调用，只有jQuery内部，才会走下面的循环
         if (one === 1) {
+            // 重新封装fn，在fn执行时，就解绑事件
             origFn = fn;
             fn = function (event) {
                 // Can use an empty set, since event contains the info
@@ -936,13 +1070,17 @@ jQuery.fn.extend({
             // Use same guid so caller can remove using origFn
             fn.guid = origFn.guid || ( origFn.guid = jQuery.guid++ );
         }
+        //遍历jQuery选取的所有元素，分别执行jQuery.event.add方法，流程转入！
         return this.each(function () {
             jQuery.event.add(this, types, fn, data, selector);
         });
     },
+
+    // 调用on
     one: function (types, selector, data, fn) {
         return this.on(types, selector, data, fn, 1);
     },
+
     off: function (types, selector, fn) {
         var handleObj, type;
         if (types && types.preventDefault && types.handleObj) {
@@ -975,6 +1113,7 @@ jQuery.fn.extend({
         });
     },
 
+    // 调用on
     bind: function (types, data, fn) {
         return this.on(types, null, data, fn);
     },
@@ -982,6 +1121,7 @@ jQuery.fn.extend({
         return this.off(types, null, fn);
     },
 
+    // 调用on
     delegate: function (selector, types, data, fn) {
         return this.on(types, selector, data, fn);
     },
@@ -990,15 +1130,45 @@ jQuery.fn.extend({
         return arguments.length === 1 ? this.off(selector, "**") : this.off(types, selector || "**", fn);
     },
 
+    // 触发事件，并且执行浏览器的默认行为,会冒泡
+    // 返回的是jQuery对象
     trigger: function (type, data) {
         return this.each(function () {
             jQuery.event.trigger(type, data, this);
         });
     },
+
+    // 只触发事件，不执行浏览器默认行为，不会冒泡
+    // 返回的是绑定事件返回的值
     triggerHandler: function (type, data) {
         var elem = this[0];
         if (elem) {
             return jQuery.event.trigger(type, data, elem, true);
         }
     }
+
+    /**
+     * 命名空间：
+     *
+     *
+     * $('input').on('click.abc',function () {
+     *      alert('abc');
+     * });
+     *
+     * $('input').on('click.xyz',function () {
+     *      alert('xyz');
+     * });
+     *
+     * $('input').on('mouseover.abc',function () {
+     *      alert('mouseover abc');
+     * });
+     *
+     * $('input').off('click.abc');
+     *
+     * $('input').off('.abc');
+     *
+     * $('input').trigger('click.xyz');
+     *
+     */
+
 });

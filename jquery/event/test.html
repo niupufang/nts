@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery ON</title>
+    <link rel="stylesheet" href="../../bootstrap/css/bootstrap.css">
+</head>
+<body>
+
+<input type="text" name="some" id="some">
+
+<ul id="userList">
+    <li><a href="##" id="item1">item1</a></li>
+    <li><a href="##">item2</a></li>
+    <li><a href="##">item3</a></li>
+    <li><a href="##">item4</a></li>
+    <li><a href="##">item5</a></li>
+</ul>
+
+<button class="btn btn-success" id="insert">插入</button>
+<script>
+
+    function Event(e) {
+        this.originEvent = e;
+
+        this.type = e.type;
+        this.timeStamp = e.timeStamp || new Date().getTime();
+    }
+
+    Event.prototype = {
+
+        preventDefault: function () {
+            var e = this.originEvent;
+
+            if (!e) return;
+
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            else {
+                e.returnValue = false;
+            }
+        },
+
+        stopPropagation: function () {
+            var e = this.originEvent;
+
+            if (!e) return;
+
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            else {
+                e.cancelBubble = true;
+            }
+        },
+
+        stopEvent: function () {
+            this.preventDefault();
+            this.stopPropagation();
+        }
+    };
+
+    function proxy(fn, context, args) {
+        return function () {
+            fn.apply(context, args || [])
+        };
+    }
+
+    function on(element, eventName, fn, scope) {
+        if (document.addEventListener) {
+
+            if (scope) {
+                fn = proxy(fn, scope);
+            }
+
+            element.addEventListener(eventName, fn, false);
+        }
+        else {
+            element.attachEvent('on' + eventName, proxy(fn, scope || element));
+        }
+    }
+
+    function fix(jQueryEvent) {
+
+        var originEvent = jQueryEvent.originEvent;
+
+        //console.log(originEvent);
+
+        //键盘code处理
+        var keys = ['char', 'charCode', 'key', 'keyCode'];
+
+        for (var i = 0, len = keys.length; i < len; i++) {
+            var key = keys[i];
+            jQueryEvent[key] = originEvent[key];
+        }
+
+        jQueryEvent.which = originEvent.charCode !== null ? originEvent.charCode : originEvent.keyCode;
+
+        // mouse 事件处理
+        /*var mouses = ["button", "buttons", "clientX", "clientY", "fromElement", "offsetX", "offsetY", "pageX", "pageY", "screenX", "screenY", "toElement"];
+
+         for (var i = 0, len = mouses.length; i < len; i++) {
+         var mouse = mouses[i];
+         jQueryEvent[mouse] = originEvent[mouse];
+         }*/
+
+        //事件源
+        jQueryEvent.target = originEvent.srcElement ? originEvent.srcElement : originEvent.target;
+
+        //纠正which
+        if (originEvent.which) {
+            jQueryEvent.which = originEvent.which;
+        }
+        else {
+            jQueryEvent.which = {1: 1, 4: 2, 2: 3}[originEvent.button];
+        }
+
+        jQueryEvent.clientX = originEvent.clientX;
+        jQueryEvent.clientY = originEvent.clientY;
+
+        if (!originEvent.pageX) {
+            jQueryEvent.pageX = jQueryEvent.clientX + document.documentElement.scrollLeft + document.documentElement.clientLeft;
+            jQueryEvent.pageY = jQueryEvent.clientY + document.documentElement.scrollTop + document.documentElement.clientTop;
+
+        }
+
+
+        return jQueryEvent;
+    }
+
+
+    function doScroll(fn) {
+        try {
+            document.documentElement.doScroll('left');
+        }
+        catch (e) {
+            setTimeout(function () {
+                doScroll(fn);
+            }, 10);
+            return;
+        }
+
+        fn();
+    }
+
+    function ready(fn) {
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', fn, false);
+        }
+        else {
+            doScroll(fn);
+        }
+
+    }
+
+
+    ready(function () {
+
+        alert('loaded');
+
+        var userList = document.getElementById('userList');
+        var fn = function (e) {
+            e = e || window.event;
+            e = new Event(e);
+            e = fix(e);
+            //e.preventDefault();
+
+            console.log(e);
+        };
+
+        //on(userList, 'click', fn, {name: 'lonelyclick', age: '222'});
+
+        //on(document, 'keyup', fn);
+
+        //on(document,'keydown',fn);
+
+        on(document, 'mouseup', fn);
+    });
+
+
+</script>
+</body>
+</html>
