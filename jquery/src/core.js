@@ -96,7 +96,8 @@ var
 		}
 	};
 
-// JavaScript 伪数组 http://lds2008.blogbus.com/logs/115224496.html
+// JavaScript 伪数组 http://snandy.iteye.com/blog/580373
+// http://www.jb51.net/article/24955.htm
 
 jQuery.fn = jQuery.prototype = {
 	// The current version of jQuery being used
@@ -198,8 +199,8 @@ jQuery.fn = jQuery.prototype = {
 						 // 处理 IE and Opera 混淆ID与NAME的bug
 						// 直接交给选择器
 						if ( elem.id !== match[2] ) {
-							return rootjQuery.find( selector );
-						}
+                            return rootjQuery.find( selector );
+                        }
 
 						// Otherwise, we inject the element directly into the jQuery object
 						this.length = 1;
@@ -993,9 +994,12 @@ function isArraylike( obj ) {
 	}
 
 	return type === "array" || type !== "function" &&
-		( length === 0 ||
-		typeof length === "number" && length > 0 && ( length - 1 ) in obj );
+    ( length === 0 ||
+        typeof length === "number" && length > 0 && ( length - 1 ) in obj );
 }
 
 // All jQuery objects should point back to these
 rootjQuery = jQuery(document);
+
+
+// http://www.cnblogs.com/aaronjs/p/3278578.html

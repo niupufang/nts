@@ -143,7 +143,7 @@ function internalData( elem, name, data, pvt /* Internal Use Only */ ){
 	// data.
 
 	// jQuery.cache = {jQuery.expando: {data:{}}};
-	// 这里是为了防止内部数据跟用户定义的数据项混淆，内部数据定义在jQ.cache里，用户定义数据在jQ.cache.[id] 里
+    // 这里是为了防止内部数据跟用户定义的数据项混淆，内部数据定义在jQ.cache里，用户定义数据在jQ.cache.[id] 里
 
 	if ( !pvt ) {
 		if ( !thisCache.data ) {

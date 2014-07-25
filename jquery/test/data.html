@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Data Source</title>
+</head>
+<body>
+
+<div id="box">box</div>
+
+<script src="../jquery-2.1.1.js"></script>
+<script>
+
+    $('#box').data('attr', 'value');
+    $(document).data('other', {a: 1, b: {ccc: 2}});
+
+    //console.log($('#box').data('attr'));
+    //console.log($('#box').data());
+
+</script>
+</body>
+</html>

@@ -8,7 +8,13 @@
 2014.07.10
     --1.Bootstrap Plugin,Bootstrap结束
     --2.jQuery Animattion -> animate function and easing deep
-2014.04.16
+2014.07.16
     --1.jQuery Animation 结束
     --2.jQuery Data 复习，源码分析，结束
     --3.jQuery Event 开始
+2014.07.24
+    --1.分析jQuery的Event,剩下特殊类型处理
+2014.07.25
+    --1.加入jQuery2.x源码
+    --2.分析了jQuery2.x数据缓存系统 jquery/src2.x/data.js and  jquery/src2.x/data/
+    --3.复习了1.x数据缓存系统

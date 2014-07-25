@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery.Event 源码分析</title>
+    <style>
+
+        #box {
+            height: 300px;
+            width: 300px;
+            background: #eee;
+        }
+
+        #inner {
+            display: block;
+            height: 100px;
+            width: 100px;
+            background: #008800;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div id="box" onclick="onBoxClick">
+        <span id="inner">
+            <a href="http://www.baidu.com" id="baidu">BaiDu</a>
+        </span>
+</div>
+
+
+<script src="../jquery-1.11.1.js"></script>
+
+<script>
+
+    function onBoxClick() {
+        alert(1);
+    }
+
+    $(function () {
+
+        $('#box').on('click', function (e) {
+            console.log(e.target);
+
+            e.preventDefault();
+        });
+
+        //$('#box').trigger('click');
+
+
+        if (false) {
+            var fn = function (e) {
+                console.log(e.target);
+            };
+
+            $(document).on('click', '#baidu', fn);
+            $(document).off('click', '#baidu', fn);
+
+
+            var fn = function (e) {
+                console.log('xyz click baidu');
+                e.stopPropagation();
+                e.preventDefault();
+            };
+
+            console.log(fn.guid);
+
+            $('#baidu').on('click.xyz', fn);
+            $('#baidu').off('click', fn);
+
+
+            $('#baidu').on('click.abc', function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                console.log('abc click baidu');
+            });
+
+            $('#box').on('click', function (e) {
+                console.log('box');
+            });
+
+
+            var ret = $('#baidu').on('click', {attr: 111, aaa: 222}, function (e) {
+                e.preventDefault();
+                console.log('a click baidu');
+
+                return 'something about me';
+            });
+
+            console.log(ret);
+
+
+            $('#baidu').on('click', function (e) {
+                console.log('b click baidu 2');
+            });
+
+
+            $(document).on('click', '#baidu', function (e) {
+                console.log(e.target);
+            });
+
+            $('#inner').on('click', function (e) {
+                console.log(e.target);
+            });
+
+            $('#box').on('click', function (e) {
+                console.log(e.target);
+            });
+        }
+
+
+    });
+
+</script>
+
+</body>
+</html>

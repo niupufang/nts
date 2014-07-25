@@ -58,15 +58,19 @@ jQuery.event = {
          *      1:{
          *            data:
          *            {
-         *              events:
-         *              {
+         *            },
+         *            events:
+         *            {
+         *                  click:
+         *                  [
          *
-         *              },
-         *              handle: function ()
-         *              {
+         *                  ],
+         *                  delegateCount:0
+         *            },
+         *            handle: function ()
+         *            {
          *
-         *              },--> [elem]= elem;
-         *            }
+         *            },--> [elem]= elem;
          *        }
          * };
          */
@@ -81,22 +85,36 @@ jQuery.event = {
             eventHandle = elemData.handle = function (e) {
                 // Discard the second event of a jQuery.event.trigger() and
                 // when an event is called after a page has unloaded
+
+                // jQuery.event.triggered 在trigger的时候，如果要触发一个浏览器的默认行为，
+                // 会先将jQuery.event.triggered的值设置成当前需要触发的
+                // 就是为了避免误调用jQuery的事件系统中的事件
+
                 return typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?
                     jQuery.event.dispatch.apply(eventHandle.elem, arguments) :
                     undefined;
             };
             // Add elem as a property of the handle fn to prevent a memory leak with IE non-native events
+            // 由于IE的attachEvent回调中的this不指向绑定元素，需要强制缓存它
             eventHandle.elem = elem;
         }
 
         // Handle multiple events separated by a space
         // jQuery(...).bind("mouseover mouseout", fn);
         // types = ['mouseover','mouseout']
+        // core_rnotwhite = /\S+/g
         types = ( types || "" ).match(core_rnotwhite) || [""];
         t = types.length;
         while (t--) {
 
             // rtypenamespace = /^([^.]*)(?:\.(.+)|)$/;
+
+            /**
+             * /^([^.]*)(?:\.(.+)|)$/.exec('click.abc.def') // return ["click.abc.def", "click", "abc.def"]
+             *
+             * type = origType = click;
+             * namespaces = ['abc','def']
+             */
 
             tmp = rtypenamespace.exec(types[t]) || [];
             type = origType = tmp[1];
@@ -111,6 +129,10 @@ jQuery.event = {
             special = jQuery.event.special[ type ] || {};
 
             // If selector defined, determine special event api type, otherwise given type
+            // 如果传入了selector，则绑定的是代理事件，可能需要把当前的事件类型修正为可冒泡的事件类型
+            // focus --> focusin blur --> focusout
+            // 浏览器对某些事件支持的不完整，需要修正为更好的事件类型
+            // mouseout --> mouseleave mouseover --> mouseenter
             type = ( selector ? special.delegateType : special.bindType ) || type;
 
             // Update special based on newly reset type
@@ -118,14 +140,14 @@ jQuery.event = {
 
             // handleObj is passed to all event handlers
             handleObj = jQuery.extend({
-                type: type,
-                origType: origType,
-                data: data,
-                handler: handler,
-                guid: handler.guid,
-                selector: selector,
+                type: type, // 实际使用的事件类型，不包含命名空间，但可能被修正过
+                origType: origType, // 原始事件类型，不包含命名空间，没被修正过
+                data: data, // 自定义事件数据
+                handler: handler, // 监听函数
+                guid: handler.guid, //监听函数的guid 监听对象与监听函数有同样的guid
+                selector: selector, // 选择器表达式，用于事件代理
                 needsContext: selector && jQuery.expr.match.needsContext.test(selector),
-                namespace: namespaces.join(".")
+                namespace: namespaces.join(".") // 排序后的命名空间
             }, handleObjIn);
 
             // Init the event handler queue if we're the first
@@ -134,6 +156,7 @@ jQuery.event = {
                 handlers.delegateCount = 0;
 
                 // Only use addEventListener/attachEvent if the special events handler returns false
+                // 如果是第一次绑定该类型的事件，那么就绑定主监听函数，先看是否有修正，如果没有修正，就调用原生方法进行绑定
                 if (!special.setup || special.setup.call(elem, data, namespaces, eventHandle) === false) {
                     // Bind the global event handler to the element
                     if (elem.addEventListener) {
@@ -145,6 +168,7 @@ jQuery.event = {
                 }
             }
 
+            // 如果修正对象有修正方法add，那么优先调用修正方法add绑定监听函数
             if (special.add) {
                 special.add.call(elem, handleObj);
 
@@ -154,6 +178,8 @@ jQuery.event = {
             }
 
             // Add to the element's handler list, delegates in front
+            // 如果存在selector，表示是个代理事件，把代理监听对象插入到delegateCount所指定的位置
+            // 如果不是代理事件，就直接push到数组末尾
             if (selector) {
                 handlers.splice(handlers.delegateCount++, 0, handleObj);
             } else {
@@ -161,14 +187,18 @@ jQuery.event = {
             }
 
             // Keep track of which events have ever been used, for event optimization
+            // 记录绑定过的事件，如果手动触发某个事件，可以方便的查找
             jQuery.event.global[ type ] = true;
         }
 
         // Nullify elem to prevent memory leaks in IE
+        // 解除elem对于DOM的引用，避免IE的内存泄漏
         elem = null;
     },
 
     // Detach an event or set of events from an element
+    // 移除事件
+    // mappedTypes表示：是否严格检测事件类型
     remove: function (elem, types, handler, selector, mappedTypes) {
         var j, handleObj, tmp,
             origCount, t, events,
@@ -176,11 +206,16 @@ jQuery.event = {
             namespaces, origType,
             elemData = jQuery.hasData(elem) && jQuery._data(elem);
 
+        // 如果elem不支持传入data，或者data中没有events这个对象（还没有注册过时间，移除个毛啊）
         if (!elemData || !(events = elemData.events)) {
             return;
         }
 
         // Once for each type.namespace in types; type may be omitted
+        // jQuery(...).off("mouseover mouseout", fn);
+        // types = ['mouseover','mouseout']
+        // core_rnotwhite = /\S+/g
+        // 将多个type的情况分开，逐个移除
         types = ( types || "" ).match(core_rnotwhite) || [""];
         t = types.length;
         while (t--) {
@@ -189,7 +224,20 @@ jQuery.event = {
             namespaces = ( tmp[2] || "" ).split(".").sort();
 
             // Unbind all events (on this namespace, if provided) for the element
+            // $('#box').off('.abc.xyz'); type 为null，namespaces为['abc','xyz']
             if (!type) {
+
+                /**
+                 * events = {
+                 *              click: [handleObj,handlerObj,handlerObj.....],
+                 *              mouseover: [handleObj,handlerObj,handlerObj.....],
+                 *              dblclick: [handleObj,handlerObj,handlerObj.....]
+                 *          }
+                 *
+                 * 逐个遍历，如果移除.abc.xyz，那么就传入click.abc.xyz mouseover.abc.xyz dblclick.abc.xyz
+                 *
+                 */
+
                 for (type in events) {
                     jQuery.event.remove(elem, type + types[ t ], handler, selector, true);
                 }
@@ -198,23 +246,51 @@ jQuery.event = {
 
             special = jQuery.event.special[ type ] || {};
             type = ( selector ? special.delegateType : special.bindType ) || type;
-            handlers = events[ type ] || [];
+            handlers = events[ type ] || []; // 取出存在当前dom上的handlers (events.click--> [handleObj,handlerObj,handlerObj.....])
+
+            /**
+             * "(^|\\.)" + ['abc','xyz'].join("\\.(?:.*\\.|)") + "(\\.|$)" --> "(^|\.)abc\.(?:.*\.|)xyz(\.|$)"
+             */
             tmp = tmp[2] && new RegExp("(^|\\.)" + namespaces.join("\\.(?:.*\\.|)") + "(\\.|$)");
 
             // Remove matching events
             origCount = j = handlers.length;
             while (j--) {
-                handleObj = handlers[ j ];
+                handleObj = handlers[ j ]; //单个handlerObj
 
-                if (( mappedTypes || origType === handleObj.origType ) &&
+                if (
+
+                /**
+                 * 如果是$('#box').off('.abc.xyz');
+                 * 或者 原始的类型一样 click.abc.xyz  click为原始类型origType
+                 */
+                    ( mappedTypes || origType === handleObj.origType ) &&
+                /**
+                 * 没有传入handler $('#box').off('click');
+                 * 或者 handler.guid === handleObj.guid
+                 */
                     ( !handler || handler.guid === handleObj.guid ) &&
+                /**
+                 * tmp此时是一个正则表达式
+                 */
                     ( !tmp || tmp.test(handleObj.namespace) ) &&
+
+                /**
+                 * 没有代理事件的选择符，或者
+                 * 选择符相符 ，或者
+                 * 选择符为**，并且handlerObj有选择符
+                 */
                     ( !selector || selector === handleObj.selector || selector === "**" && handleObj.selector )) {
+
+
+                    // 符合以上条件的话，就删除
                     handlers.splice(j, 1);
 
                     if (handleObj.selector) {
                         handlers.delegateCount--;
                     }
+
+                    // 如果修正对象有remove方法，调用之
                     if (special.remove) {
                         special.remove.call(elem, handleObj);
                     }
@@ -223,6 +299,10 @@ jQuery.event = {
 
             // Remove generic event handler if we removed something and no more handlers exist
             // (avoids potential for endless recursion during removal of special event handlers)
+
+            /**
+             * 如果events.click === [],,,被删除干净了，那就调用原生方法移除这个DOM上的事件吧
+             */
             if (origCount && !handlers.length) {
                 if (!special.teardown || special.teardown.call(elem, namespaces, elemData.handle) === false) {
                     jQuery.removeEvent(elem, type, elemData.handle);
@@ -232,7 +312,8 @@ jQuery.event = {
             }
         }
 
-        // Remove the expando if it's no longer used
+        // Remove the expando if it's no longer used]
+        // 如果events也空了，那就解除data绑定吧
         if (jQuery.isEmptyObject(events)) {
             delete elemData.handle;
 
@@ -252,36 +333,49 @@ jQuery.event = {
         cur = tmp = elem = elem || document;
 
         // Don't do events on text and comment nodes
+        // 不触发文本节点和注释节点上面的事件
         if (elem.nodeType === 3 || elem.nodeType === 8) {
             return;
         }
 
         // focus/blur morphs to focusin/out; ensure we're not firing them right now
+        // http://fanyi.baidu.com/translate#en/zh/morphs  变体
+        // focus/blur 是focusin和focusout的变体，确保现在触发的不是他们两
         if (rfocusMorph.test(type + jQuery.event.triggered)) {
             return;
         }
 
+        // 如果type有. 说明有命名空间存在
         if (type.indexOf(".") >= 0) {
             // Namespaced trigger; create a regexp to match event type in handle()
             namespaces = type.split(".");
             type = namespaces.shift();
             namespaces.sort();
         }
+
+        /**
+         * IE6-8 <table></table>
+         * var talbe = document.getElementsByTagName('table')[0];
+         *
+         * table[':']; --> srcript error !!!
+         * @type {boolean|string}
+         */
         ontype = type.indexOf(":") < 0 && "on" + type;
 
         // Caller can pass in a jQuery.Event object, Object, or just an event type string
+        // event 可以是一个jQuery.Event , {type:'click',namespace:'abc.xyz'}, 'click'
         event = event[ jQuery.expando ] ?
             event :
             new jQuery.Event(type, typeof event === "object" && event);
 
-        event.isTrigger = true;
-        event.namespace = namespaces.join(".");
-        event.namespace_re = event.namespace ?
+        event.isTrigger = true; // 正在触发
+        event.namespace = namespaces.join("."); // 命名空间
+        event.namespace_re = event.namespace ? //  命名空间正则表达式
             new RegExp("(^|\\.)" + namespaces.join("\\.(?:.*\\.|)") + "(\\.|$)") :
             null;
 
         // Clean up the event in case it is being reused
-        event.result = undefined;
+        event.result = undefined; // 将event的返回值清空
         if (!event.target) {
             event.target = elem;
         }
@@ -292,6 +386,7 @@ jQuery.event = {
             jQuery.makeArray(data, [ event ]);
 
         // Allow special events to draw outside the lines
+        // 优先触发特殊处理的事件
         special = jQuery.event.special[ type ] || {};
         if (!onlyHandlers && special.trigger && special.trigger.apply(elem, data) === false) {
             return;
@@ -299,18 +394,33 @@ jQuery.event = {
 
         // Determine event propagation path in advance, per W3C events spec (#9951)
         // Bubble up to document, then to window; watch for a global ownerDocument var (#9724)
+        /**
+         * 当满足一下条件时，不会构造冒泡路径
+         *
+         * 1.onlyHandlers为true，表示只触发当前元素上的事件监听函数，不会触发默认行为
+         * 2.对于修正对象的noBubble为true，即不允许当前时间冒泡，例如load事件
+         * 3.当前元素时window对象，已经是最顶层对象了
+         *
+         * 当onlyHandlers为false，并且没有阻止冒泡，并且不是window，构建冒泡路径
+         */
         if (!onlyHandlers && !special.noBubble && !jQuery.isWindow(elem)) {
 
+            // 优先使用delegateType，foucs(不能冒泡的) --> focusinn（能冒泡）
             bubbleType = special.delegateType || type;
+
+            // 将cur指向父节点 focusin and focusout 例外
             if (!rfocusMorph.test(bubbleType + type)) {
                 cur = cur.parentNode;
             }
+
+            // 构建冒泡路径
             for (; cur; cur = cur.parentNode) {
                 eventPath.push(cur);
                 tmp = cur;
             }
 
             // Only add window if we got to document (e.g., not plain obj or detached DOM)
+            // 如果最后一个是document，按照事件规范，向路径中添加window对象
             if (tmp === (elem.ownerDocument || document)) {
                 eventPath.push(tmp.defaultView || tmp.parentWindow || window);
             }
@@ -318,6 +428,9 @@ jQuery.event = {
 
         // Fire handlers on the event path
         i = 0;
+
+        // 逐个向上层节点遍历，执行该type的handler，
+        // 如果停止了冒泡，停止该过程
         while ((cur = eventPath[i++]) && !event.isPropagationStopped()) {
 
             event.type = i > 1 ?
@@ -331,6 +444,8 @@ jQuery.event = {
             }
 
             // Native handler
+            // 执行行内onXXX事件
+            // <table onclick="somefn">
             handle = ontype && cur[ ontype ];
             if (handle && jQuery.acceptData(cur) && handle.apply && handle.apply(cur, data) === false) {
                 event.preventDefault();
@@ -338,16 +453,22 @@ jQuery.event = {
         }
         event.type = type;
 
+        // 触发浏览器默认行为，如果设置了停止默认行为，停止该过程
         // If nobody prevented the default action, do it now
         if (!onlyHandlers && !event.isDefaultPrevented()) {
 
-            if ((!special._default || special._default.apply(elem.ownerDocument, data) === false) && !(type === "click" && jQuery.nodeName(elem, "a")) && jQuery.acceptData(elem)) {
+            if ((!special._default || special._default.apply(elem.ownerDocument, data) === false) // special._default 预留给需要特殊处理的默认行为
+                && !(type === "click" && jQuery.nodeName(elem, "a")) // 不在a上面执行默认的click，因为页面会跳转
+                && jQuery.acceptData(elem)) { // 如果elem上不能设置缓存系统，跳出
 
                 // Call a native DOM method on the target with the same name name as the event.
                 // Can't use an .isFunction() check here because IE6/7 fails that test.
                 // Don't do default actions on window, that's where global variables be (#6170)
+
+                // 不在window上触发默认事件，因为是存变量的地方
                 if (ontype && elem[ type ] && !jQuery.isWindow(elem)) {
 
+                    // 为了避免行内监听函数被执行，先将其设置为null，并且保存到tmp中，触发完成后再设置进去
                     // Don't re-trigger an onFOO event when we call its FOO() method
                     tmp = elem[ ontype ];
 
@@ -356,7 +477,11 @@ jQuery.event = {
                     }
 
                     // Prevent re-triggering of the same event, since we already bubbled it above
+                    // 为了避免再次触发jquery事件方法绑定的监听函数，先将jQuery.event.triggered设置为当前事件类型
+                    // 默认事件触发完毕之后再设置为undefined
                     jQuery.event.triggered = type;
+
+                    // IE 6-8的focus和blur运用到一个隐藏的元素上面，会报错
                     try {
                         elem[ type ]();
                     } catch (e) {
@@ -372,40 +497,64 @@ jQuery.event = {
             }
         }
 
+        // 返回最后一个事件结果
         return event.result;
     },
 
     dispatch: function (event) {
 
         // Make a writable jQuery.Event from the native event object
+        // 修正原生event为jQuery.Event，并修复其中的方法
         event = jQuery.event.fix(event);
 
         var i, ret, handleObj, matched, j,
             handlerQueue = [],
             args = core_slice.call(arguments),
+
+        // 取出绑定在DOM上的handlers --> events:{click:[handlerObj,handlerObj,handlerObj,handlerObj...]}
             handlers = ( jQuery._data(this, "events") || {} )[ event.type ] || [],
+
+        // 取出特殊处理的设置
             special = jQuery.event.special[ event.type ] || {};
 
         // Use the fix-ed jQuery.Event rather than the (read-only) native event
+        // 替换第一个参数为jQuery.Event对象
         args[0] = event;
+
+        // 代理目标 this
         event.delegateTarget = this;
 
+        // 转发前执行
         // Call the preDispatch hook for the mapped type, and let it bail if desired
         if (special.preDispatch && special.preDispatch.call(this, event) === false) {
             return;
         }
 
         // Determine handlers
+        // 获取执行的函数链
+        /**
+          {
+            elem: 冒泡路径上的某个元素,
+            matches: [handlerObj,handlerObj,handlerObj...] 冒泡路径上的，或者自带的
+            并且，是有顺序的，显示触发事件的target，然后才是想让冒泡的
+          },
+          {},{},{}
+         */
         handlerQueue = jQuery.event.handlers.call(this, event, handlers);
 
         // Run delegates first; they may want to stop propagation beneath us
+        // 正序遍历，如果event已经阻止了冒泡，停止遍历
         i = 0;
         while ((matched = handlerQueue[ i++ ]) && !event.isPropagationStopped()) {
+            // currentTarget 是指当前正在触发事件的元素
             event.currentTarget = matched.elem;
 
             j = 0;
+
+            //继续遍历，如果执行了立即停止冒泡，那就停止某个元素上该事件类型的所有handler的执行
             while ((handleObj = matched.handlers[ j++ ]) && !event.isImmediatePropagationStopped()) {
 
+                // 没有namespace，或者namespace符合要求
                 // Triggered event must either 1) have no namespace, or
                 // 2) have namespace(s) a subset or equal to those in the bound event (both can have no namespace).
                 if (!event.namespace_re || event.namespace_re.test(handleObj.namespace)) {
@@ -413,9 +562,13 @@ jQuery.event = {
                     event.handleObj = handleObj;
                     event.data = handleObj.data;
 
+                    // 优先执行修正的special['click'].handler
                     ret = ( (jQuery.event.special[ handleObj.origType ] || {}).handle || handleObj.handler )
                         .apply(matched.elem, args);
 
+                    // 如果handler有返回值，则将返回值赋值到jQuery.Event上
+                    // 如果返回值为false，那么就执行stopEvent()
+                    // 浏览器原生，return false只是相当于e.preventDefault()
                     if (ret !== undefined) {
                         if ((event.result = ret) === false) {
                             event.preventDefault();
@@ -426,35 +579,72 @@ jQuery.event = {
             }
         }
 
+        // 转发前执行
         // Call the postDispatch hook for the mapped type
         if (special.postDispatch) {
             special.postDispatch.call(this, event);
         }
 
+        // 返回最后一个handler的返回值
         return event.result;
     },
 
+    /**
+     * return
+     * {
+     *      elem: 冒泡路径上的某个元素,
+     *      matches: [handlerObj,handlerObj,handlerObj...] 冒泡路径上的，或者自带的
+     * }
+     */
     handlers: function (event, handlers) {
         var sel, handleObj, matches, i,
             handlerQueue = [],
             delegateCount = handlers.delegateCount,
             cur = event.target;
 
+        /**
+         * handlers -> [handlerObj,handlerObj,handlerObj,handlerObj]
+         *
+         * $(document).on('click','#userList li a',function () {
+         *
+         * });
+         *
+         * event -> new jQuery.Event(event)
+         * handlers -> 是
+         * curr 为当前触发的元素
+         *
+         * 比如有以下DOM：
+         * <div><span>I am span</span></div>
+         * 点击span时，target为触发事件的元素span
+         */
         // Find delegate handlers
         // Black-hole SVG <use> instance trees (#13180)
         // Avoid non-left-click bubbling in Firefox (#3861)
+
+        /**
+         * 如果当前元素上有代理事件，那么从当前触发的元素，一直向上模拟冒泡
+         * <div><span>I am span</span></div>
+         * eg: 触发的事件为span -> div -> document
+         * cur 分别为 span div document 为document的时候，就停止了
+         */
         if (delegateCount && cur.nodeType && (!event.button || event.type !== "click")) {
 
             for (; cur != this; cur = cur.parentNode || this) {
 
                 // Don't check non-elements (#13208)
                 // Don't process clicks on disabled elements (#6911, #8165, #11382, #11764)
+
+                //  HTMLElement nodeType === 1
+                //  不能将在disabled的元素上冒泡click
                 if (cur.nodeType === 1 && (cur.disabled !== true || event.type !== "click")) {
                     matches = [];
+
+                    // 遍历所有的handlers
                     for (i = 0; i < delegateCount; i++) {
                         handleObj = handlers[ i ];
 
                         // Don't conflict with Object.prototype properties (#13203)
+                        // 保存当前代理对象的选择符
                         sel = handleObj.selector + " ";
 
                         if (matches[ sel ] === undefined) {
@@ -473,6 +663,7 @@ jQuery.event = {
             }
         }
 
+        // 如果当前this没有被注册代理类型的事件，那么就直接把当前的handlerspush到handlerQueue中
         // Add the remaining (directly-bound) handlers
         if (delegateCount < handlers.length) {
             handlerQueue.push({ elem: this, handlers: handlers.slice(delegateCount) });
@@ -518,10 +709,10 @@ jQuery.event = {
 
         /**
          *target是触发的DOM元素
-          currentTarget 是绑定事件的元素，等同于this
-          relatedTarget 移入移出相关的元素
-          <div> <span></span></div>
-          $('div').on('click',function (e) {
+         currentTarget 是绑定事件的元素，等同于this
+         relatedTarget 移入移出相关的元素
+         <div> <span></span></div>
+         $('div').on('click',function (e) {
               console.log(e.target); // 点击span元素时是SPANelement,点击DIV元素时是DivElement
               console.log(e.currentTarget); //都是DIVElement
           });
@@ -610,6 +801,8 @@ jQuery.event = {
     special: {
         load: {
             // Prevent triggered image.load events from bubbling to window.load
+            // 本来，load事件是不冒泡的，但是在调用trigger的时候，会构建一个从当前元素到window的冒泡路径
+            // 这就会导致在image.load的时候调用window.load
             noBubble: true
         },
         click: {
@@ -635,6 +828,8 @@ jQuery.event = {
                     }
                 }
             },
+
+            // focus和blur是不支持冒泡的，在事件委托的时候，需要把这两个换成支持冒泡的focusin和focusout
             delegateType: "focusin"
         },
         blur: {
@@ -682,8 +877,11 @@ jQuery.event = {
     }
 };
 
+/**
+ * 原生移除事件
+ */
 jQuery.removeEvent = document.removeEventListener ?
-    function (elem, type, handle) {
+    function (elem, type, handle) { // W3C
         if (elem.removeEventListener) {
             elem.removeEventListener(type, handle, false);
         }
@@ -693,7 +891,10 @@ jQuery.removeEvent = document.removeEventListener ?
 
         if (elem.detachEvent) {
 
+            // IE6-8 BUG
             // #8545, #7054, preventing memory leaks for custom events in IE6-8
+            // http://bugs.jquery.com/ticket/8545
+            // http://bugs.jquery.com/ticket/7054 IE8内存泄漏
             // detachEvent needed property on element, by name of that event, to properly expose it to GC
             if (typeof elem[ name ] === core_strundefined) {
                 elem[ name ] = null;
@@ -1093,6 +1294,12 @@ jQuery.fn.extend({
             );
             return this;
         }
+
+
+        /**
+         * $('#box').off({click:fn1,mouseover:fn2},'#userList li a');
+         */
+
         if (typeof types === "object") {
             // ( types-object [, selector] )
             for (type in types) {
@@ -1100,14 +1307,25 @@ jQuery.fn.extend({
             }
             return this;
         }
+
+        /**
+         * $('#box').off('click',false);
+         * $('#box').off('click',fn1);
+         *
+         * 这里表示没有传入selector
+         */
         if (selector === false || typeof selector === "function") {
             // ( types [, fn] )
             fn = selector;
             selector = undefined;
         }
+
+        //如果fn为false，那么将fn替换为return false的方法
         if (fn === false) {
             fn = returnFalse;
         }
+
+        // 逐个遍历，调用jQuery.event.remove
         return this.each(function () {
             jQuery.event.remove(this, types, fn, selector);
         });
