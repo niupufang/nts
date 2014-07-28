@@ -1,0 +1,16 @@
+@mixin horizontal-list($spacing: 10px) {
+  li {
+    float: right;
+    margin-right: $spacing;
+  }
+}
+
+#header ul.nav {
+  float: right;
+  @include horizontal-list;
+}
+
+#footer ul.nav {
+  font-weight: 18px;
+  @include horizontal-list(30px);
+}

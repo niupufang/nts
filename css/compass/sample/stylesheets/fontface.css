@@ -1,0 +1,12 @@
+@font-face {
+    font-family: "singlemalta";
+    src: url(/css/compass/sample/stylesheets/singlemalta-webfont.eot);
+    src: url(/css/compass/sample/stylesheets/singlemalta-webfont.eot?#iefix) format('embedded-opentype'), url(/HTML5Exp/css/compass/sample/stylesheets/fonts/singlemalta-webfont.woff) format('woff'), url(/HTML5Exp/css/compass/sample/stylesheets/fonts/singlemalta-webfont.ttf) format('truetype'), url(/HTML5Exp/css/compass/sample/stylesheets/fonts/singlemalta-webfont.svg) format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* line 12, ../sass/fontface.scss */
+#pra {
+    font-family: singlemalta;
+}

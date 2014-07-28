@@ -1,0 +1,17 @@
+#header ul.nav {
+    float: right;
+}
+
+#header ul.nav li {
+    float: right;
+    margin-right: 10px;
+}
+
+#footer ul.nav {
+    font-weight: 18px;
+}
+
+#footer ul.nav li {
+    float: right;
+    margin-right: 30px;
+}

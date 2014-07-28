@@ -1,0 +1,15 @@
+@import "var";
+
+$link-color: #aaa !default;
+
+.abc {
+  color: $link-color;
+}
+
+a {
+  color: #111;
+}
+
+#footer {
+  @import "blue-theme";
+}

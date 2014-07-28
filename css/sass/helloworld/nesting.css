@@ -1,0 +1,8 @@
+ul.nav {
+  float: right; }
+  ul.nav li {
+    float: left; }
+    ul.nav li a {
+      color: #111111; }
+    ul.nav li.cur {
+      color: #ddd; }

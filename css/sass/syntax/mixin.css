@@ -1,0 +1,33 @@
+.notice {
+  background: #000000;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px; }
+  .notice ul {
+    font-size: 15px;
+    float: right; }
+    .notice ul li {
+      display: inline-block; }
+      .notice ul li a {
+        text-decoration: none;
+        height: 20px;
+        width: 100px;
+        text-align: center;
+        line-height: 20px; }
+        .notice ul li a.hover {
+          background: #aaa;
+          color: red; }
+
+.something a {
+  color: blue; }
+  .something a:hover {
+    color: red; }
+  .something a:visited {
+    color: green; }
+
+.something2 a {
+  color: blue; }
+  .something2 a:hover {
+    color: blue; }
+  .something2 a:visited {
+    color: blue; }

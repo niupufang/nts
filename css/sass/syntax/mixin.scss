@@ -1,0 +1,62 @@
+@mixin rounded-corners {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+
+  ul {
+    font-size: 15px;
+    float: right;
+
+    li {
+      display: inline-block;
+
+      a {
+        text-decoration: none;
+        height: 20px;
+        width: 100px;
+        text-align: center;
+        line-height: 20px;
+
+        &.hover {
+          background: #aaa;
+          color: red;
+        }
+      }
+    }
+  }
+}
+
+.notice {
+  background: #000000;
+  @include rounded-corners
+}
+
+@mixin link-colors($normal, $hover, $visited) {
+  color: $normal;
+  &:hover {
+    color: $hover;
+  }
+
+  &:visited {
+    color: $visited;
+  }
+}
+
+.something a {
+  @include link-colors(blue, red, green);
+}
+
+@mixin line($normal, $hover: $normal, $visited: $normal) {
+  color: $normal;
+  &:hover {
+    color: $hover;
+  }
+
+  &:visited {
+    color: $visited;
+  }
+}
+
+.something2 a {
+  @include line(blue);
+}

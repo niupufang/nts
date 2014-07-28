@@ -1,0 +1,14 @@
+// http://www.cnblogs.com/rubylouvre/archive/2011/06/19/2084875.html
+@import "compass";
+
+@include font-face("singlemalta",
+        font_files(
+                        "/HTML5Exp/css/compass/sample/stylesheets/fonts/singlemalta-webfont.woff", woff,
+                        "/HTML5Exp/css/compass/sample/stylesheets/fonts/singlemalta-webfont.ttf", ttf,
+                        "/HTML5Exp/css/compass/sample/stylesheets/fonts/singlemalta-webfont.svg", svg),
+        "/css/compass/sample/stylesheets/singlemalta-webfont.eot", normal, normal
+);
+
+#pra {
+  font-family: singlemalta;
+}

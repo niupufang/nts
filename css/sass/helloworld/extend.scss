@@ -1,0 +1,24 @@
+.error {
+  color: #333;
+}
+
+.error .intructor {
+  font-size: 12px;
+}
+
+error .intructor #abc {
+  border: 1px solid #aaa;
+}
+
+.badError {
+  @extend .error;
+  border-width: 10px;
+}
+
+%button-reset {
+  color: white;
+}
+
+.save {
+  @extend %button-reset;
+}

@@ -1,0 +1,23 @@
+article a {
+  color: blue; }
+  article a span {
+    color: red; }
+  article a:hover {
+    text-decoration: underline; }
+  body.id article a {
+    color: green; }
+
+nav {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #ccc; }
+
+.nav2 {
+  border: 1px solid #cccccc;
+    border-left: 0px;
+    border-right: 0px; }
+
+.nav3 {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #ccc; }

@@ -1,0 +1,14 @@
+.error, .badError {
+  color: #333; }
+
+.error .intructor, .badError .intructor {
+  font-size: 12px; }
+
+error .intructor #abc {
+  border: 1px solid #aaa; }
+
+.badError {
+  border-width: 10px; }
+
+.save {
+  color: white; }

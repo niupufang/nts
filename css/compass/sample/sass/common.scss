@@ -1,0 +1,40 @@
+@import "compass/css3";
+
+/*$experimental-support-for-khtml: false;
+$experimental-support-for-opera: false;
+$experimental-support-for-microsoft: false;*/
+
+#box {
+  height: 300px;
+  width: 300px;
+  background: #aaa;
+  @include border-radius(15px);
+
+  @include box-shadow(
+          black 0 0 0 25px,
+          red 0 -50px 0,
+          blue 50px -0px 0,
+          yellow 0 50px 0,
+          lime -50px 0 0
+  );
+
+  @include background(
+          linear_gradient(
+                          360deg,
+                          #bfbfbf 0%,
+                          #bfbfbf 12.5%,
+                          #bfbf00 25%,
+                          #000000 100%
+          )
+  );
+  h1 {
+    @include box-shadow(#ccc, 5px, 5px, 2px);
+  }
+}
+
+#icon {
+  height: 32px;
+  width: 32px;
+  background: image-url('icon/aid.png') no-repeat;
+  margin: 100px;
+}

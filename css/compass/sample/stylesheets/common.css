@@ -1,0 +1,35 @@
+/*$experimental-support-for-khtml: false;
+$experimental-support-for-opera: false;
+$experimental-support-for-microsoft: false;*/
+/* line 7, ../sass/common.scss */
+#box {
+  height: 300px;
+  width: 300px;
+  background: #aaa;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+  border-radius: 15px;
+  -webkit-box-shadow: black 0 0 0 25px, red 0 -50px 0, blue 50px 0px 0, yellow 0 50px 0, lime -50px 0 0;
+  -moz-box-shadow: black 0 0 0 25px, red 0 -50px 0, blue 50px 0px 0, yellow 0 50px 0, lime -50px 0 0;
+  box-shadow: black 0 0 0 25px, red 0 -50px 0, blue 50px 0px 0, yellow 0 50px 0, lime -50px 0 0;
+  background: -webkit-linear-gradient(360deg, #bfbfbf 0%, #bfbfbf 12.5%, #bfbf00 25%, #000000 100%);
+  background: -moz-linear-gradient(360deg, #bfbfbf 0%, #bfbfbf 12.5%, #bfbf00 25%, #000000 100%);
+  background: -o-linear-gradient(360deg, #bfbfbf 0%, #bfbfbf 12.5%, #bfbf00 25%, #000000 100%);
+  background: linear-gradient(360deg, #bfbfbf 0%, #bfbfbf 12.5%, #bfbf00 25%, #000000 100%);
+}
+/* line 30, ../sass/common.scss */
+#box h1 {
+  -webkit-box-shadow: #cccccc, 5px, 5px, 2px;
+  -moz-box-shadow: #cccccc, 5px, 5px, 2px;
+  box-shadow: #cccccc, 5px, 5px, 2px;
+}
+
+/* line 35, ../sass/common.scss */
+#icon {
+  height: 32px;
+  width: 32px;
+  background: url('/HTML5Exp/css/compass/sample/images/icon/aid.png?1393872480') no-repeat;
+  margin: 100px;
+}

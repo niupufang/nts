@@ -1,0 +1,8 @@
+/* line 4, ../sass/css3.scss */
+.round {
+  -webkit-border-radius: 25px;
+  -moz-border-radius: 25px;
+  -ms-border-radius: 25px;
+  -o-border-radius: 25px;
+  border-radius: 25px;
+}

@@ -1,0 +1,39 @@
+article a {
+  color: blue;
+
+  span {
+    color: red;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  body.id & {
+    color: green;
+  }
+
+}
+
+nav {
+  border: {
+    style: solid;
+    width: 1px;
+    color: #ccc;
+  }
+}
+
+.nav2 {
+  border: 1px solid #ccc {
+    left: 0px;
+    right: 0px;
+  } //例外
+}
+
+.nav3 {
+  border: {
+    style: solid;
+    width: 1px;
+    color: #ccc;
+  }
+}
