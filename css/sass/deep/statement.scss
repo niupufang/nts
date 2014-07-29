@@ -1,0 +1,33 @@
+@for $i from 1 to 10 {
+  .rating-#{$i} {
+    background: url(/images/rating-#{$i}.png) no-repeat;
+  }
+}
+
+@each $ele in home, about, archive, projects {
+  nav .#{$ele} {
+    background: url(images/#{$ele}.png) no-repeat;
+  }
+}
+
+$color: red;
+
+@if $color {
+  h1 {
+    color: $color;
+  }
+}
+
+@if $color == blue {
+  h2 {
+    background: blue;
+  }
+} @else if $color == red {
+  h3 {
+    background: red;
+  }
+} @else {
+  h4 {
+    background: #aaaaaa;
+  }
+}

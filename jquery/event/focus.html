@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>focus blur</title>
+</head>
+<body>
+
+<div id="box">
+    box
+        <span id="inner">
+
+            <input type="text" id="username">
+        </span>
+</div>
+
+<script src="../jquery-1.11.1.js"></script>
+
+<script>
+
+
+    $(document).on('focus', '#username', function () {
+        console.log('username focus !');
+    });
+
+
+    $(document).on('focus', '#box', function () {
+        console.log('box focus !');
+    });
+
+    var box = document.getElementById('box'),
+            inner = document.getElementById('inner'),
+            username = document.getElementById('username');
+
+    console.log(username.form);
+
+    if (false) {
+
+
+        username.addEventListener('focusin', function () {
+            console.log('focus trigger!!!');
+        }, false);
+
+        inner.addEventListener('focusin', function () {
+            console.log('inner trigger');
+        }, false)
+
+
+        username.addEventListener('focus', function () {
+            console.log('focus trigger!!!');
+        }, true);
+
+        inner.addEventListener('focus', function () {
+            console.log('inner trigger');
+        }, false)
+    }
+
+
+</script>
+</body>
+</html>

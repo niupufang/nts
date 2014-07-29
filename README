@@ -1,10 +1,17 @@
-这是一个扩充前端视野的项目，目前包括以下主题：
+这是一个扩充前端视野的项目，目前包括但不限于以下主题：
 
 1.Understore
-2.WebSQL
+2.HTML5
 3.Bootstrap
-4.JQuery Animation
-5.JQuery Event
+4.Sass
+    a.Sass
+    b.Compass
+5.JQuery
+    a.Animation
+    b.Event
+    c.Data
+    d.Callback
+    e.Defered
 
 接下来的计划：
 
@@ -12,11 +19,10 @@ a.jQuery
 1、分析jQuery的Callback源代码
 2、分析jQuery的Defered源代码
 3、分析jQuery的Animation源代码
-4、分析jQuery的DOM与Event源代码
+4、分析jQuery的DOM
 5、开始jQuery的Ajax深入学习
 
 b.Backbone
     underscore已完，为backbone打下了基础，就剩下开始了
-c.less sass
-d.coffeescript
-e.requirejs
+c.coffeescript
+d.requirejs

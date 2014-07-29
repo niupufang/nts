@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<div id="box">
+
+    <form method="get">
+
+        <input type="text" name="username" value="lonelyclick">
+        <input type="submit" value="tijiao">
+    </form>
+
+</div>
+
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+
+
+    $('#box').on('submit', function (e) {
+        alert('submitjQuery');
+    });
+
+    function isSupportSubmitBubble() {
+        var div = document.createElement('div');
+
+        var isSupport = false;
+
+        if ('onsubmit' in div) {
+            isSupport = true;
+        }
+
+        if (!isSupport) {
+            div['onsubmit'] = 'return;';
+
+            if (typeof div['onsubmit'] === 'function') {
+                isSupport = true;
+            }
+        }
+        return isSupport;
+    }
+
+    if (false) {
+        var form = document.getElementsByTagName('form')[0];
+
+        console.log(form.username.form);
+
+        addListener(form, 'submit', function () {
+            alert('submit'); // 在IE9+，这里会触发，但是IE678不会触发。
+        });
+
+        addListener(document, 'submit', function () {
+            alert('document submit');
+        });
+
+
+        function addListener(ele, eventName, fn, scope) {
+            if (ele.addEventListener) {
+                ele.addEventListener(eventName, fn, false);
+            } else {
+                ele.attachEvent('on' + eventName, function () {
+                    return fn.call(ele, fn);
+                });
+            }
+        }
+    }
+
+
+</script>
+
+</body>
+</html>

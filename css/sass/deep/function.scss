@@ -1,0 +1,44 @@
+h1.value {
+  width: abs(-100px);
+  width: ceil(100.3px);
+  width: floor(100.5px);
+  width: floor(100.2px);
+  width: round(100.2px);
+  width: round(100.7px);
+  width: 200 + unit(100.7px);
+  height: percentage(0.4);
+  height: comparable(1cm, 13in);
+  height: 1cm + 13in;
+}
+
+$color: #abcefd;
+
+h2.color {
+  color: red($color);
+  color: green($color);
+  color: blue($color);
+  color: alpha($color);
+  color: hue($color);
+  color: saturation($color);
+  color: lightness($color);
+  color: adjust_color($color, $red: 20, $alpha: -0.5);
+  color: adjust_color($color, $lightness: 15%, $hue: 10deg);
+  color: scale_color(rgba(191, 206, 253, 0.5), $red: 10%); // (255-191) * 10% + 191
+
+  color: mix(red, blue);
+  color: mix(red, blue, 50%);
+  color: mix(red, blue, 70%);
+}
+
+$list: 41px solid #aaa;
+$list2: 1px dashed #bbb;
+
+h3.list {
+  border-width: nth($list, 1);
+  border-color: nth($list, 3);
+  border-style: nth($list, 2);
+
+  border: length($list);
+
+  border: join($list, $list2);
+}

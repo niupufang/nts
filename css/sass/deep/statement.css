@@ -1,0 +1,44 @@
+.rating-1 {
+  background: url(/images/rating-1.png) no-repeat; }
+
+.rating-2 {
+  background: url(/images/rating-2.png) no-repeat; }
+
+.rating-3 {
+  background: url(/images/rating-3.png) no-repeat; }
+
+.rating-4 {
+  background: url(/images/rating-4.png) no-repeat; }
+
+.rating-5 {
+  background: url(/images/rating-5.png) no-repeat; }
+
+.rating-6 {
+  background: url(/images/rating-6.png) no-repeat; }
+
+.rating-7 {
+  background: url(/images/rating-7.png) no-repeat; }
+
+.rating-8 {
+  background: url(/images/rating-8.png) no-repeat; }
+
+.rating-9 {
+  background: url(/images/rating-9.png) no-repeat; }
+
+nav .home {
+  background: url(images/home.png) no-repeat; }
+
+nav .about {
+  background: url(images/about.png) no-repeat; }
+
+nav .archive {
+  background: url(images/archive.png) no-repeat; }
+
+nav .projects {
+  background: url(images/projects.png) no-repeat; }
+
+h1 {
+  color: red; }
+
+h3 {
+  background: red; }

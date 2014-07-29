@@ -1,0 +1,11 @@
+@function grid-width($cells) {
+  @return ($cell-width + $cell-padding) * $cells;
+}
+
+@mixin thing($class, $prop) {
+  some#{$class}: $prop;
+}
+
+h1 {
+  @include thing(border, 1px);
+}

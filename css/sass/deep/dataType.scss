@@ -1,0 +1,20 @@
+$color: foo + 1;
+
+$background: "foo" + 1;
+
+$var: 1px;
+
+h1 {
+  color: $color;
+  background: $background;
+  text-shadow: foo + "bar0";
+  text-decoration: foo - bar;
+  text-align-last: foo / bar;
+
+  width: 10px+43px;
+  height: 20*30em;
+
+  font-size: 1px/2px;
+  font-size: $var / 2;
+  font-size: (1px/2px)
+}

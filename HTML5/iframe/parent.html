@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+I am parent
+
+<iframe src="children.html" width="100%" height="100%" id="dataIFrame" style="display: none;"></iframe>
+
+<script>
+
+    window.onload = function () {
+        var dataIframe = document.getElementById('dataIFrame');
+        console.log(dataIframe.contentWindow.add);
+    };
+
+</script>
+
+</body>
+</html>

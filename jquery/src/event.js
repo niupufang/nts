@@ -323,6 +323,8 @@ jQuery.event = {
         }
     },
 
+    //构建冒泡路径，获取各元素上被绑定的事件，执行之
+    //并且触发浏览器的默认行为
     trigger: function (event, data, elem, onlyHandlers) {
         var handle, ontype, cur,
             bubbleType, special, tmp, i,
@@ -501,6 +503,12 @@ jQuery.event = {
         return event.result;
     },
 
+    /**
+     * dispatch负责在元素被用户触发的时候，获得所有的handlerObj，去执行
+     * 如果存在事件委托，则向上遍历，执行所有元素上的handlerObj方法
+     * @param event
+     * @returns {Object|details.result|*|result|undefined}
+     */
     dispatch: function (event) {
 
         // Make a writable jQuery.Event from the native event object
@@ -562,7 +570,7 @@ jQuery.event = {
                     event.handleObj = handleObj;
                     event.data = handleObj.data;
 
-                    // 优先执行修正的special['click'].handler
+                    // 优先执行修正的special['click'].handle
                     ret = ( (jQuery.event.special[ handleObj.origType ] || {}).handle || handleObj.handler )
                         .apply(matched.elem, args);
 
@@ -579,7 +587,7 @@ jQuery.event = {
             }
         }
 
-        // 转发前执行
+        // 转发后执行
         // Call the postDispatch hook for the mapped type
         if (special.postDispatch) {
             special.postDispatch.call(this, event);
@@ -853,6 +861,13 @@ jQuery.event = {
         }
     },
 
+    /**
+     * 模拟一个事件
+     * @param type 事件类型
+     * @param elem 元素
+     * @param event event
+     * @param bubble 是否冒泡
+     */
     simulate: function (type, elem, event, bubble) {
         // Piggyback on a donor event to simulate a different one.
         // Fake originalEvent to avoid donor's stopPropagation, but if the
@@ -862,13 +877,17 @@ jQuery.event = {
             event,
             {
                 type: type,
-                isSimulated: true,
+                isSimulated: true, //表示是个模拟事件
                 originalEvent: {}
             }
         );
-        if (bubble) {
+        if (bubble) { //如果冒泡的话，直接trigger
+            // 1.先从当前元素向上遍历到document，然后取出各自的handlerObj就行执行
+            // 2.从下至上，触发浏览器的默认行为
             jQuery.event.trigger(e, null, elem);
         } else {
+            // 如果不冒泡，直接事件转发
+            // 从下至上，取出所有handlerObj，进行执行
             jQuery.event.dispatch.call(elem, e);
         }
         if (e.isDefaultPrevented()) {
@@ -1041,6 +1060,8 @@ jQuery.Event.prototype = {
 };
 
 // Create mouseenter/leave events using mouseover/out and event-time checks
+// 对于不支持这两个方法的浏览器，进行判断？？？？
+// 很明显，这里是对所有的浏览器进行了处理
 jQuery.each({
     mouseenter: "mouseover",
     mouseleave: "mouseout"
@@ -1049,14 +1070,17 @@ jQuery.each({
         delegateType: fix,
         bindType: fix,
 
+        // handle是在最后一步执行handler的时候截断到此
         handle: function (event) {
             var ret,
                 target = this,
-                related = event.relatedTarget,
+                related = event.relatedTarget,// 在IE的mouseover是，fromElement,mouseout时，是toElement
                 handleObj = event.handleObj;
 
             // For mousenter/leave call the handler if related is outside the target.
             // NB: No relatedTarget if the mouse left/entered the browser window
+            // 如果relatedTarget没有，或者（当前target不等于relatedTarget，并且target不包含related），则触发
+            // 这一句代码写的太精妙了，不能自拔。
             if (!related || (related !== target && !jQuery.contains(target, related))) {
                 event.type = handleObj.origType;
                 ret = handleObj.handler.apply(this, arguments);
@@ -1068,30 +1092,84 @@ jQuery.each({
 });
 
 // IE submit delegation
-if (!jQuery.support.submitBubbles) {
+/**
+ * IE 6 7 8 不支持submit的冒泡
+ *
+ * 使用可能：
+ *
+ * <div id="box">
+ *  <form method="post">
+ *
+ *  </form>
+ * </div>
+ *
+ * $('#box').on('submit',function () {});
+ *
+ *
+ * jQuery.support.submitBubbles实现思路大致是：
+ *
+ * function isSupportSubmitBubble() {
+        var div = document.createElement('div');
 
+        var isSupport = false;
+
+        if ('onsubmit' in div) {
+            isSupport = true;
+        }
+
+        if (!isSupport) {
+            div['onsubmit'] = 'return;';
+
+            if (typeof div['onsubmit'] === 'function') {
+                isSupport = true;
+            }
+        }
+        return isSupport;
+    }
+
+ PS:change和focusin都是大致的判断思路
+
+ 解决问题：
+    IE678不支持submit的冒泡，如果$('#box').on('submit',function () {});将不会执行
+
+ 兼容的大致思路：
+    1.在当前绑定submit的元素上绑定click和press事件，因为form中回车键和点击input时都会触发form的submit事件
+    2.在触发click和press事件时，判断target是否为button或者input，如果是，找到其上的form
+    3.如果form存在，注册form的submit事件，只要事件被触发，那么将event._submit_bubble的标志位设置为true
+    4.当正常jquery的转发完成后，模拟form上层元素的submit冒泡，从而触发当前绑定的submit
+ */
+if (!jQuery.support.submitBubbles) {
     jQuery.event.special.submit = {
         setup: function () {
             // Only need this for delegated form submit events
+            // 如果当前是form元素，则不需要模拟冒泡，直接进入默认的流程，相当于$('#box').on('submit',function () {});不需要处理了
             if (jQuery.nodeName(this, "form")) {
                 return false;
             }
 
             // Lazy-add a submit handler when a descendant form may potentially be submitted
+            // 给box元素添加click和keypress方法，命名空间为_submit，当box的子元素有出发click或者press事件时
+            // 获得input或者button的form，如果form存在，说明这是一次form提交，然后给from注册submit._submit事件
+            //
             jQuery.event.add(this, "click._submit keypress._submit", function (e) {
                 // Node name check avoids a VML-related crash in IE (#9807)
                 var elem = e.target,
                     form = jQuery.nodeName(elem, "input") || jQuery.nodeName(elem, "button") ? elem.form : undefined;
+                // 如果form上还没有submitBubbles的数据缓存，说明form上还没有被绑定submit_submit事件，绑定之
                 if (form && !jQuery._data(form, "submitBubbles")) {
                     jQuery.event.add(form, "submit._submit", function (event) {
                         event._submit_bubble = true;
                     });
-                    jQuery._data(form, "submitBubbles", true);
+                    jQuery._data(form, "submitBubbles", true); //设置标志位为true，防止重复绑定
                 }
             });
             // return undefined since we don't need an event listener
         },
 
+        /**
+         * 事件转发完成后，判断event上是否有_submit_bubble这个标志位，如果有，所有form已经提交了，然后删除之
+         * 从父节点开始模拟submit事件
+         */
         postDispatch: function (event) {
             // If form was submitted by the user, bubble the event up the tree
             if (event._submit_bubble) {
@@ -1102,13 +1180,17 @@ if (!jQuery.support.submitBubbles) {
             }
         },
 
+
+        // $('#box').off('submit',fn);
         teardown: function () {
             // Only need this for delegated form submit events
+            // 如果是form，跟add一样，return false
             if (jQuery.nodeName(this, "form")) {
                 return false;
             }
 
             // Remove delegated handlers; cleanData eventually reaps submit handlers attached above
+            // 移除绑定的_submit事件
             jQuery.event.remove(this, "._submit");
         }
     };
@@ -1173,6 +1255,34 @@ if (!jQuery.support.changeBubbles) {
     };
 }
 
+// see: http://yiminghe.iteye.com/blog/813255
+// see: http://www.cnblogs.com/snandy/archive/2011/07/19/2110393.html
+// see: http://www.cnblogs.com/aaronjs/p/3481075.html
+
+/**
+ * jQuery.support.focusinBubbles --> support.focusinBubbles = "onfocusin" in window;
+ * 只有在FF下面，不支持focusin和focusout
+ * 但是jQuery在chrome下面，好像支持，但是也判断为false，不知为何
+ *
+ * 1.9.1如下实现：
+ *
+ // Support: IE<9 (lack submit/change bubble), Firefox 17+ (lack focusin event)
+ // Beware of CSP restrictions (https://developer.mozilla.org/en/Security/CSP)
+ for ( i in { submit: true, change: true, focusin: true }) {
+		div.setAttribute( eventName = "on" + i, "t" );
+
+		support[ i + "Bubbles" ] = eventName in window || div.attributes[ eventName ].expando === false;
+}
+ 解决问题：
+    1.focus和blur不支持冒泡
+    2.但是在FF以外的浏览器可以用focusin和focusout替代
+    3.FF用以下兼容
+
+ 兼容大致思路：
+    1.由于FF不支持focusin和focusout，只能通过捕获阶段来模拟冒泡
+    2.当之前还没有在任何元素上注册过focus事件的时候，在document上注册focus事件，只吃一次
+    3.在捕获阶段，document上的focus肯定先行执行，拿到target，模拟向上冒泡，执行所有的focus
+ */
 // Create "bubbling" focus and blur events
 if (!jQuery.support.focusinBubbles) {
     jQuery.each({ focus: "focusin", blur: "focusout" }, function (orig, fix) {
@@ -1180,12 +1290,17 @@ if (!jQuery.support.focusinBubbles) {
         // Attach a single capturing handler while someone wants focusin/focusout
         var attaches = 0,
             handler = function (event) {
+
+                //模拟focusin事件，fix为focusin，event.target是触发事件的元素，true表示bubble冒泡
+                //这里的event.target比较重要，在事件捕获阶段，当focus到一个input时，event.target就是这个input
+                //有了这个target，才能够模拟从input到document的冒泡
                 jQuery.event.simulate(fix, event.target, jQuery.event.fix(event), true);
             };
 
         jQuery.event.special[ fix ] = {
             setup: function () {
                 if (attaches++ === 0) {
+                // 如果是第一次，那就在document上注册handler函数，handler函数会模拟从event.target到document上所有的focus等事件
                     document.addEventListener(orig, handler, true);
                 }
             },

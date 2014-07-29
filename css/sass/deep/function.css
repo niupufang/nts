@@ -1,0 +1,33 @@
+h1.value {
+  width: 100px;
+  width: 101px;
+  width: 100px;
+  width: 100px;
+  width: 100px;
+  width: 101px;
+  width: "200px";
+  height: 40%;
+  height: true;
+  height: 34.02cm; }
+
+h2.color {
+  color: 171;
+  color: 206;
+  color: 253;
+  color: 1;
+  color: 214.39024deg;
+  color: 95.34884%;
+  color: 83.13725%;
+  color: rgba(191, 206, 253, 0.5);
+  color: #f6f8ff;
+  color: rgba(197, 206, 253, 0.5);
+  color: #7f007f;
+  color: #7f007f;
+  color: #b2004c; }
+
+h3.list {
+  border-width: 41px;
+  border-color: #aaaaaa;
+  border-style: solid;
+  border: 3;
+  border: 41px solid #aaaaaa 1px dashed #bbbbbb; }
