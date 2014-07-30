@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>JSDeferred Chain 孤独惟者</title>
+</head>
+<body>
+<script src="../../jquery-1.11.1.js"></script>
+<script src="jsdeferred.jquery.js"></script>
+<script>
+
+    var http = {};
+
+    http.get = function (uri) {
+
+        var deferred = new Deferred();
+        var xhr = new XMLHttpRequest();
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    deferred.call(xhr);
+                }
+                else {
+                    deferred.fail(xhr);
+                }
+            }
+        };
+
+        deferred.canceller = function () {
+            xhr.abort();
+        };
+
+        return deferred;
+    };
+
+</script>
+</body>
+</html>

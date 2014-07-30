@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+
+    var fn1 = function (name) {
+        console.log('1 , ' + name);
+    };
+
+    var fn2 = function (name) {
+        console.log('2 , ' + name);
+        return false;
+    };
+
+    var fn3 = function (name) {
+        console.log('3 , ' + name);
+    };
+
+    var callbacks = $.Callbacks('stopOnFalse');
+
+
+    callbacks.add(fn1, [fn2, fn3]);
+
+    callbacks.fire('abc');
+
+    var callbacks = $.Callbacks('memory');
+    callbacks.add(fn1, [fn2, fn3]);
+    callbacks.fire('mmm');
+
+    callbacks.add(fn3);
+    callbacks.add(fn1);
+
+    callbacks.fire('nnn');
+
+    callbacks.add(fn2);
+    callbacks.fire('nnn');
+
+    console.log('------------------------------------------------');
+
+    var callbacks = $.Callbacks('memory stopOnFalse');
+    callbacks.add(fn1, [fn2, fn3]);
+    callbacks.fire('mmm');
+    callbacks.add(fn3);
+    callbacks.fire('nnn');
+
+    console.log('-------------------------------------------------');
+
+    var callbacks = $.Callbacks();
+
+    for (var i = 0; i < 1000000; i++) {
+
+        (function (index) {
+            callbacks.add(function () {
+                console.log(index);
+            });
+        })(i);
+    }
+
+    callbacks.fire();
+
+
+</script>
+
+</body>
+</html>

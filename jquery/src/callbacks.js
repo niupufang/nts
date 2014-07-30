@@ -6,6 +6,33 @@
 //jQuery.Callbacks()的核心思想是 Pub/Sub 模式，建立了程序间的松散耦合和高效通信。
 
 // String to Object options format cache
+
+
+function Observable() {
+    this.callbacks = [];
+}
+
+Observable.prototype = {
+    constructor: Observable,
+
+    add: function (fn) {
+        this.callbacks.push(fn);
+    },
+
+    fire: function () {
+        for (var i = 0, len = this.callbacks.length; i < len; i++) {
+            this.callbacks.apply(this.callbacks[i],Array.prototype.slice.call(arguments,0));
+        }
+    }
+};
+
+/**
+ * optionsCache = {
+ *                  unqiue:true,
+ *                  memory:true...
+ *                };
+ */
+
 var optionsCache = {};
 
 // Convert String-formatted options into Object-formatted ones and store in cache
@@ -90,6 +117,8 @@ jQuery.Callbacks = function( options ) {
 
 	// Convert options from String-formatted to Object-formatted if needed
 	// (we check in cache first)
+
+    //这句话，是获取callbacks所有的选项，并且缓存到optionsCache中
 	options = typeof options === "string" ?
 		( optionsCache[ options ] || createOptions( options ) ) :
 		jQuery.extend( {}, options );
@@ -110,21 +139,32 @@ jQuery.Callbacks = function( options ) {
 		list = [],
 		// Stack of fire calls for repeatable lists
 		stack = !options.once && [],
+        //如果配置了once，stack的值为false，否则为[]
+
 		// Fire callbacks
 		fire = function( data ) {
+
+            /**
+             * 如果options里有memory为true，那么每次在fire的时候，会将这次触发的context和args组成的数组保存到memory变量中
+             * 在下次再次add的时候，判断memory是否有值，如果有，立马触发
+             * firingStart设置为没有memory之后的最后一个list长度，从firingStart到现有length，遍历执行
+             */
 			memory = options.memory && data; //是否配置了记忆功能
-			
+
 			//这里的memory只要曾经有过触发，那么再add的时候，就会自动的触发之，并且其中存的是 上一次fire是的args:::[context,args]
-			fired = true; //表示已经被触发了
+			fired = true; //表示已经被触发了，fired()返回这个
 			firingIndex = firingStart || 0; //开始触发的索引
 			firingStart = 0;
-			firingLength = list.length; //回调列表的长度 
+			firingLength = list.length; //回调列表的长度
 			firing = true; //正在触发
 			for ( ; list && firingIndex < firingLength; firingIndex++ ) {
-				
+
 				//data is a array::: [context,args]
-				//如果配置了stopOnFalse，并且返回false，那么break循环
-				if ( list[ firingIndex ].apply( data[ 0 ], data[ 1 ] ) === false && options.stopOnFalse ) { 
+				//如果配置了stopOnFalse，并且返回false，那么跳出循环
+				if ( list[ firingIndex ].apply( data[ 0 ], data[ 1 ] ) === false && options.stopOnFalse ) {
+                    //这句话，适合于同时又memory和stopOnFalse两个选项都在的时候
+                    //这里的规则是：如果有其中一个停止了，那么就将这次memory去掉，下次add的时候不再起效
+                    //下次除非把return false的函数remove，那么add的不会执行，也没有意义
 					memory = false; // To prevent further calls using add 废除记忆功能
 					break;
 				}
@@ -132,13 +172,13 @@ jQuery.Callbacks = function( options ) {
 			firing = false; // 触发完毕
 			if ( list ) {
 				if ( stack ) { // 没有配置once的时候
-					if ( stack.length ) { //执行完回调后，看一下stack是否有回调，有拿出来执行
+					if ( stack.length ) { //执行完回调后，看一下stack是否之前搁置的fire，如果有，执行之
 						fire( stack.shift() );
 					}
 				} else if ( memory ) { //如果没有stack，证明传了once，这里的Callbacks会是这样：$.Callbacks('once memory')
 					list = [];
 				} else {
-					self.disable(); //当是$.Callbacks('once')的时候，将list置为undefined
+					self.disable(); //当是$.Callbacks('once')的时候，将list置为undefined，下次不会再执行喽
 				}
 			}
 		},
@@ -148,17 +188,23 @@ jQuery.Callbacks = function( options ) {
 			add: function() {
 				if ( list ) {
 					// First, we save the current length
+                    // 先保存现有list的长度到start
 					var start = list.length;
-					
+
 					//这里用了一个立即执行的add函数来添加回调
                     //直接遍历传过来的arguments进行push
 					(function add( args ) {
 						jQuery.each( args, function( _, arg ) {
 							var type = jQuery.type( arg );
-							if ( type === "function" ) { 
+							if ( type === "function" ) {
 								//假如传过来的参数为数组或array-like
 								//则继续调用添加，从这里可以看出add的传参可以有add(fn),add([fn1,fn2]),add(fn1,fn2)
 								if ( !options.unique || !self.has( arg ) ) {
+
+                                    // 相当于 (!(options.unique && self.has( arg )))
+                                    // options.unique && self.has( arg )--> unique配置了true，并且list中存在此fn
+                                    // 不是这种情况的时候，push进去，unique的实现好简单。
+
 									list.push( arg );
 								}
 							} else if ( arg && arg.length && type !== "string" ) {
@@ -240,16 +286,16 @@ jQuery.Callbacks = function( options ) {
 				args = args || [];
 				args = [ context, args.slice ? args.slice() : args ];
 				if ( list && ( !fired || stack ) ) { // is option.once is true,stack is false
-					
+
 					//1.如果$.Callbacks('once'),那么stack为false
 					//2.如果没有加入once参数，那么stack为[]
-					
+
 					//如果没有触发过  或者  没有配置once
-					
-					if ( firing ) { //如果当前的回调队列正在触发，那么将argspush到stack中
+
+					if ( firing ) { //如果当前的回调队列正在触发，那么将argspush到stack中，等待当前回调结束再调用
 						stack.push( args );
 					} else { //否则，触发之
-						fire( args ); 
+						fire( args );
 					}
 				}
 				return this;

@@ -233,6 +233,7 @@ jQuery.fn = jQuery.prototype = {
 		// HANDLE: $(function) $(document).ready(function () {});
 		// $(function () {});
 		// Shortcut for document ready
+        // 如果传入一个函数，则是要DOMContentLoaded
 		} else if ( jQuery.isFunction( selector ) ) {
 			return rootjQuery.ready( selector );
 		}

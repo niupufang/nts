@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>JSDeferred Error 孤独惟者</title>
+</head>
+<body>
+<script src="../../jquery-1.11.1.js"></script>
+<script src="jsdeferred.jquery.js"></script>
+<script>
+
+    Deferred.next(function () {
+        console.log(1);
+    }).next(function () {
+        throw 'error';
+    }).next(function () {
+        console.log(2);
+    }).error(function (e) {
+        console.log(e);
+    }).next(function () {
+        console.log(3);
+    });
+
+</script>
+</body>
+</html>

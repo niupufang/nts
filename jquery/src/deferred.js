@@ -2,6 +2,90 @@
 //2. http://www.cnblogs.com/littledu/articles/2813051.html
 //3. http://www.cnblogs.com/aaronjs/p/3356505.html
 
+/**
+ *
+ * callbacks中，disable相当于把callback废掉了，不能add也不能fire
+ * lock相当于不能...
+ *
+ * deferred.resolve() --> doneList.fire()
+ * 1.将state设置成resolved
+ * 2.将failList废掉
+ * 3.将notifyList锁住
+ * 4.执行done方法add进来的函数 -->doneList.add
+ *
+ * deferred.reject() --> failList.fire()
+ * 1.将state设置成rejected
+ * 2.将doneList废掉
+ * 3.将notifyList锁住
+ * 4.执行fail方法add进来的函数 --> failList.add
+ *
+ * deferred.notify() --> notifyList.fire()
+ * 1.执行progress方法add进来的函数 --> notifyList.add
+ *
+ * deferred.always(fn) -->
+ * 1.doneList.add(fn)
+ * 2.failList.add(fn)
+ *
+ * deferred.state 返回当前的state值
+ *
+ *  doneList = $.Callbacks("once memory");
+ *
+ *  doneList.add(
+ *      function () {
+ *          state = 'resolved';
+ *      },
+ *      failList.disable,
+ *      notifyList.lock
+ *  );
+ *
+ *  failList = $.Callbacks("once memory");
+ *
+ *  failList.add(
+ *      function () {
+ *          state = 'rejected';
+ *      },
+ *      doneList.disable,
+ *      notifyList.lock
+ *  );
+ *
+ *  notifyList = $.Callbacks("memory");
+ *
+ *
+ *  promise =
+ *  {
+ *      done:doneList.add,
+ *      fail:failList.add,
+ *      notify:notifyList.add
+ *
+ *      ---->自带
+ *
+ *      state:
+ *      always:
+ *      then:
+ *      promise
+ *  };
+ *
+ *  deferred =
+ *  {
+ *      resolveWith: doneList.fireWith,
+ *      resolve: deferred.resolveWith,
+ *      rejecteWith: failList.fireWith,
+ *      rejecte: deferred.rejecteWith
+ *
+ *      -->>>>>promise赋值而来
+ *
+ *      done:doneList.add,
+ *      fail:failList.add,
+ *      notify:notifyList.add
+ *  };
+ *
+ *  apply(deferred,promise);
+ *
+ *
+ *
+ */
+
+
 jQuery.extend({
 
 	Deferred: function( func ) {
@@ -21,13 +105,30 @@ jQuery.extend({
 					deferred.done( arguments ).fail( arguments );
 					return this;
 				},
+                /**
+                 * 在jQuery1.7，不是这样实现的，--> deferred.done(doneCallback).fail(failCallback).progress(progressCallback);
+                 *
+                 * 1.构建一个新的deferred对象，返回受限的promise对象
+                 * 2.给父deferred对象的[ done | fail | progress ]方法都增加一个过滤函数的方法
+                 *
+                 *
+                 * $.Deferred(fn) fn(deferred,deferred);
+                 *
+                 */
 				then: function( /* fnDone, fnFail, fnProgress */ ) {
 					var fns = arguments;
 					return jQuery.Deferred(function( newDefer ) {
+
+                        // newDefer可以看作是：newDefer = $.Deferred(fn-->jQuery.each);
+
 						jQuery.each( tuples, function( i, tuple ) {
 							var action = tuple[ 0 ],
 								fn = jQuery.isFunction( fns[ i ] ) && fns[ i ];
 							// deferred[ done | fail | progress ] for forwarding actions to newDefer
+
+                            //deferred.done(function () {.....});
+                            //deferred其实就是根级父对象的引用,所以就嵌套再深,其实都是调用了父对象deferred[ done | fail | progress 执行add罢了
+
 							deferred[ tuple[1] ](function() {
 								var returned = fn && fn.apply( this, arguments );
 								if ( returned && jQuery.isFunction( returned.promise ) ) {
@@ -44,7 +145,7 @@ jQuery.extend({
 					}).promise();
 				},
 				// Get a promise for this deferred
-				// If obj is provided, the promise aspect is added to the object
+                // If obj is provided, the promise aspect is added to the object
 				promise: function( obj ) {
 					return obj != null ? jQuery.extend( obj, promise ) : promise;
 				}
@@ -87,18 +188,6 @@ jQuery.extend({
 			};
 			
 			deferred[ tuple[0] + "With" ] = list.fireWith;
-			
-//			deferred.doneWith = list.fireWith;
-//			deferred.done = function()
-//			{
-//				deferred.doneWith(args);
-//			}; 
-			
-//          -->deferred.done = list.fireWith;
-//          -->deferred.doneWith = list.fireWith;
-//          -->deferred.reject = list.fireWith;
-//          -->deferred.rejectWith = list.fireWith;
-//          .......................................
 		});
 
 		// Make the deferred a promise

@@ -21,3 +21,7 @@
 2014.07.29
     --1.深入sass，sass完结
     --2.jQueryEvent事件修正，差change时间，鼠标滚轮等
+2014.07.30
+    --1.学习mousewheel时间，了解其兼容
+    --2.重新分析Callbacks
+    --3.深入分析Deferred模块，比较困难，then/when

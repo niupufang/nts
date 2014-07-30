@@ -219,3 +219,10 @@
     }
 
 }));
+
+
+//http://www.cnblogs.com/rubylouvre/archive/2010/05/01/1725462.html
+//http://www.w3cmm.com/javascript/mousewheel-dommousescroll.html
+//https://github.com/brandonaaron/jquery-mousewheel
+//http://www.zhangxinxu.com/wordpress/2013/04/js-mousewheel-dommousescroll-event/
+//https://developer.mozilla.org/en-US/docs/Web/Events/wheel

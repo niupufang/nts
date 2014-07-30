@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>JSDeferred Demo1 孤独惟者</title>
+</head>
+<body>
+<script src="../../jquery-1.11.1.js"></script>
+<script src="jsdeferred.jquery.js"></script>
+<script>
+
+    var urls = ['/HTML5Exp/README', '/HTML5Exp/ChangeLog'];
+
+    var results = [];
+    Deferred.loop(urls.length, function (i) {
+        return $.get(urls[i]).next(function (data) {
+            results.push(data);
+        });
+    }).next(function () {
+        console.log(results);
+    });
+
+    results = []
+
+    Deferred.parallel([
+        $.get('/HTML5Exp/README'),
+        $.get('/HTML5Exp/ChangeLog')
+    ]).next(function (results) {
+        console.log(results);
+    });
+
+</script>
+</body>
+</html>

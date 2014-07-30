@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>MouseWheel 孤独惟者</title>
+</head>
+<body>
+<div style="height:3000px"></div>
+
+<script>
+
+    function addListener(element, eventName, fn) {
+        if (element.addEventListener) {
+            element.addEventListener(eventName, fn, false);
+        }
+        else {
+            element.attachEvent('on' + eventName, function () {
+                return fn.apply(element, Array.prototype.slice.call(arguments));
+            });
+        }
+    }
+
+    function addMouseWheelListener(element, fn) {
+        addListener(element, element.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll', fn);
+
+    }
+
+    function fixEvent(e) {
+        e = e || window.event;
+
+        var delta;
+
+        if ('wheelDelta' in e) { // not FF
+            delta = e.wheelDelta;
+            e.detail = -delta / 40;
+
+            if (window.opera && opera.version() < 9.5) {
+                delta = -delta;
+            }
+
+        }
+        else if ('detail' in e) { // FF
+            delta = e.wheelDelta = -40 * e.detail;
+        }
+
+        e.delta = delta;
+        return e;
+    }
+
+    var fn = function (e) {
+        e = fixEvent(e);
+        alert(e.delta);
+    };
+
+    addMouseWheelListener(document, fn);
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+
+    var deferred = $.Deferred();
+
+    var promise = deferred.then(function (a) {
+        console.log(a);
+        return a * 2;
+    }).then(function (a) {
+        console.log(a);
+        return a * 4;
+    }).then(function (a) {
+        console.log(a);
+    });
+
+    console.log(deferred === promise);
+
+    deferred.resolve(5);
+
+
+</script>
+</body>
+</html>
