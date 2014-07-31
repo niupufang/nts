@@ -8,16 +8,16 @@
     b.Compass
 5.JQuery
     a.Animation
-    b.Event
-    c.Data
-    d.Callback
-    e.Defered
+    b.Event->doneing
+    c.Data->done
+    d.Callback->done
+    e.Defered->done
 
 接下来的计划：
 
 a.jQuery
-1、分析jQuery的Callback源代码
-2、分析jQuery的Defered源代码
+1、分析jQuery的Callback源代码->done
+2、分析jQuery的Defered源代码->done
 3、分析jQuery的Animation源代码
 4、分析jQuery的DOM
 5、开始jQuery的Ajax深入学习

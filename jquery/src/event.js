@@ -1196,13 +1196,16 @@ if (!jQuery.support.submitBubbles) {
     };
 }
 
+/**
+ * change事件在表单元素的值改变时被触发，IE9之前的浏览器中，change不支持冒泡，jQuery在此进行了修正
+ */
 // IE change delegation and checkbox/radio fix
 if (!jQuery.support.changeBubbles) {
 
     jQuery.event.special.change = {
 
         setup: function () {
-
+            // var rformElems = /^(?:input|select|textarea)$/i,
             if (rformElems.test(this.nodeName)) {
                 // IE doesn't fire change on a check/radio until blur; trigger it on click
                 // after a propertychange. Eat the blur-change in special.change.handle.

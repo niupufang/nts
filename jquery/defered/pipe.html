@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+
+    var fn1 = function (data) {
+        console.log('fn1', data);
+    };
+
+    var fn2 = function (data) {
+        console.log('fn2', data);
+    };
+
+    var fn3 = function (data) {
+        console.log('fn3', data);
+    };
+
+    var request = $.ajax('/HTML5Exp/README').done(fn1);
+
+    request.then(function () {
+        return $.ajax('/HTML5Exp/ChangeLog').done(fn2);
+    }).done(fn3);
+
+</script>
+</body>
+</html>

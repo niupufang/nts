@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<script src="../jquery-1.11.1.js"></script>
+<script>
+
+    var deferred1 = $.Deferred();
+
+    setTimeout(function () {
+        deferred1.resolve();
+    }, 1000);
+
+    var deferred2 = $.Deferred();
+
+    setTimeout(function () {
+        deferred2.resolve();
+    }, 3000);
+
+    $.when(deferred1).done(function () {
+        alert('single done');
+    });
+
+
+    if (false) {
+        $.when(deferred1, deferred2, function () {
+            alert('something...');
+        }).done(function () {
+            alert('done');
+        }).fail(function () {
+            alert('fail');
+        });
+    }
+
+
+</script>
+</body>
+</html>

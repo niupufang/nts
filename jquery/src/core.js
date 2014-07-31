@@ -78,6 +78,15 @@ var
 	// The ready event handler
 	completed = function( event ) {
 
+        /**
+         * DOMContentLoaded window.onload onreadystatechange 都会走到这里
+         * 然后执行两步：
+         * 1.删除绑定的事件 DOMContentLoaded window.onload onreadystatechange
+         * 2.告知jQuery，可以了，jQuery.ready()!!!
+         *
+         * PS:document.readyState对应IE678的ready判断已经足够好了，IE678，你够了，呵呵
+         */
+
 		// readyState === "complete" is good enough for us to call the dom ready in oldIE
 		if ( document.addEventListener || event.type === "load" || document.readyState === "complete" ) {
 			detach();
@@ -425,6 +434,24 @@ jQuery.extend({
 	readyWait: 1,
 
 	// Hold (or release) the ready event
+    /**
+     * holdReady用于延迟或者恢复ready事件的触发
+     *
+     * <script src="jquery.js"></script>
+     * <script>
+     *
+     *     $.holdReady(true);
+     *     $.getScript('someplugin.js',function () {
+     *          $.holdReady(false);
+     *     });
+     *
+     *     如果hold传入true，则阻止ready事件的触发，
+     *     也可以多次调用之，要分别用hold为false进行调用，然后ready才能触发
+     *
+     * </script>
+     *
+     * @param hold
+     */
 	holdReady: function( hold ) {
 		if ( hold ) {
 			jQuery.readyWait++;
@@ -434,29 +461,43 @@ jQuery.extend({
 	},
 
 	// Handle when the DOM is ready
+    // 所有的DOMReady后，都会走到这个函数
 	ready: function( wait ) {
 
 		// Abort if there are pending holds or we're already ready
+        /**
+         * 如果wait是true，说明是holdReady（false）调用了，如果现在jQuery.readyWait是1，那就不return，如果不是大于1，ok，需要return
+         * 如果wait不是true，那就是DOMContentLoaded window.onload readystatechange等弄过来的，
+         * 那就看jQuery.isReady是不是true，如果是true，说明已经进入过了这个函数，return，如果不是true，说明是第一次进入，ok，进入之！
+         * 这句话，包含的意思真多，真TM节省比特啊！
+         */
 		if ( wait === true ? --jQuery.readyWait : jQuery.isReady ) {
 			return;
 		}
 
 		// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
+        // 这个时候document.body本应该有了，但是还没有，这里的setTimeout，也是为了防止阻塞吧，再来一次，这是循环吧？不解中。
 		if ( !document.body ) {
-			return setTimeout( jQuery.ready );
-		}
+            return setTimeout( jQuery.ready );
+        }
 
 		// Remember that the DOM is ready
+        //终于标记是准备就绪了
 		jQuery.isReady = true;
 
 		// If a normal DOM Ready event fired, decrement, and wait if need be
+        // 如果不是holdReady进入到的该循环，就把jQuery.readyWait-1，如果还是大于0，说明还没有恢复完全，那就继续等下一次
 		if ( wait !== true && --jQuery.readyWait > 0 ) {
 			return;
 		}
 
 		// If there are functions bound, to execute
+        // OK,解决掉了，done应该可以执行了，因为done在callback内部是one memory
+        // 所以，无论是现在刚执行完毕，还是以后再加入的，全部统统执行
+        // 闲说一句，Deferred的引入使这里变得有点不好懂，刚开始，jQuery是用Callback实现的，然后又换成Deferred
 		readyList.resolveWith( document, [ jQuery ] );
 
+        // 如果trigger已经就绪，那就手动触发document.ready事件，触发完毕之后，将事件删除
 		// Trigger any bound ready events
 		if ( jQuery.fn.trigger ) {
 			jQuery( document ).trigger("ready").off("ready");
@@ -917,19 +958,32 @@ jQuery.extend({
 });
 
 jQuery.ready.promise = function( obj ) {
-	if ( !readyList ) {
+	if ( !readyList ) { //readyList是个jquery闭包中的全局对象，保存一个用于ready的deferred对象
 
 		readyList = jQuery.Deferred();
 
 		// Catch cases where $(document).ready() is called after the browser event has already occurred.
 		// we once tried to use readyState "interactive" here, but it caused issues like the one
 		// discovered by ChrisS here: http://bugs.jquery.com/ticket/12282#comment:15
+
+        /**
+         * document.readyState 可以返回如下字符串：
+         * uninitialized:尚未开始加载
+         * loading：正在加载
+         * interactive：已经加载了必须内容，此时用户可以操作
+         * complete：全部加在完成
+         *
+         * 如果这个document.readyState的值有改变，就会触发一个document.readystatechange事件
+         * setTimeout(fn,0) 允许其他脚本延迟ready事件触发，那就不会阻塞了。
+         */
 		if ( document.readyState === "complete" ) {
 			// Handle it asynchronously to allow scripts the opportunity to delay ready
+            //如果此刻文档已经就绪，调用jQuery.ready
 			setTimeout( jQuery.ready );
 
 		// Standards-based browsers support DOMContentLoaded
 		} else if ( document.addEventListener ) {
+            //标准浏览器使用DOMContentLoaded，为了防御，注册window.onload
 			// Use the handy event callback
 			document.addEventListener( "DOMContentLoaded", completed, false );
 
@@ -938,6 +992,11 @@ jQuery.ready.promise = function( obj ) {
 
 		// If IE event model is used
 		} else {
+
+            //监听onreadystatechange
+            //window.onload
+            //测试doScroll
+
 			// Ensure firing before onload, maybe late but safe also for iframes
 			document.attachEvent( "onreadystatechange", completed );
 
@@ -947,6 +1006,8 @@ jQuery.ready.promise = function( obj ) {
 			// If IE and not a frame
 			// continually check to see if the document is ready
 			var top = false;
+
+            //如果当前页面时顶层页面，也就是没有用iframe被包含在其他页面中，还可以使用doScroll方法进行检测
 
 			try {
 				top = window.frameElement == null && document.documentElement;
@@ -964,6 +1025,8 @@ jQuery.ready.promise = function( obj ) {
 							return setTimeout( doScrollCheck, 50 );
 						}
 
+
+                        //删除所有的ready事件 DOMContentLoaded,window.onload,onreadystatechange
 						// detach all dom ready events
 						detach();
 
@@ -1000,7 +1063,16 @@ function isArraylike( obj ) {
 }
 
 // All jQuery objects should point back to these
+
+// rootjQuery是jquery对于document的选择
 rootjQuery = jQuery(document);
 
 
 // http://www.cnblogs.com/aaronjs/p/3278578.html
+
+/**
+ *  jQuery() --> $(document).ready
+ *  分析这个，需要到support.js里调试，因为jQuery内部，会调用一个jQuery(function () {}); 用来测试浏览器的支持情况
+ *  1.首先，走到判断selector是不是一个函数的分支，如果是，转到rootQuery.ready，也就是$(document).ready,也就是jQuery.prototype.ready
+ *  2.在jQuery.prototype.ready里，执行jQuery.ready.promise()方法，详情请看上面代码不远处
+ **/

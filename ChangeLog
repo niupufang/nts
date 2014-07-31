@@ -25,3 +25,6 @@
     --1.学习mousewheel时间，了解其兼容
     --2.重新分析Callbacks
     --3.深入分析Deferred模块，比较困难，then/when
+2014.07.31
+    --1.Deferred的then和when
+    --2.DOM Ready，事件仅仅剩下change事件的修复
