@@ -1206,6 +1206,11 @@ if (!jQuery.support.changeBubbles) {
 
         setup: function () {
             // var rformElems = /^(?:input|select|textarea)$/i,
+            /**
+             * 最后return了false，说明还按照原来的事件流程走
+             * IE只会在blur的时候出发change事件，在这里，监听了propertychange事件，并且在选中的时候，才会模拟冒泡
+             * 当click事件发生改变时，检测是否为checked，如果是立即模拟change的冒泡
+             */
             if (rformElems.test(this.nodeName)) {
                 // IE doesn't fire change on a check/radio until blur; trigger it on click
                 // after a propertychange. Eat the blur-change in special.change.handle.
@@ -1226,6 +1231,8 @@ if (!jQuery.support.changeBubbles) {
                 }
                 return false;
             }
+            //如果不是上述的3个元素，那么就注册beforeactivate事件，该事件在元素得到焦点前被触发，并且支持冒泡，该事件仅仅IE支持
+            //有点类似于submit的修正
             // Delegated event; lazy-add a change handler on descendant inputs
             jQuery.event.add(this, "beforeactivate._change", function (e) {
                 var elem = e.target;

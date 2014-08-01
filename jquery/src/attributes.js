@@ -279,14 +279,14 @@ jQuery.extend({
 					options = elem.options,
 					values = jQuery.makeArray( value ),
 					i = options.length;
-				
+
 				while ( i-- ) {
 					option = options[ i ];
 					if ( (option.selected = jQuery.inArray( jQuery(option).val(), values ) >= 0) ) {
 						optionSet = true;
 					}
 				}
-				
+
 				// force browsers to behave consistently when non-matching value is set
 				if ( !optionSet ) {
 					elem.selectedIndex = -1;
@@ -316,6 +316,12 @@ jQuery.extend({
 		// Grab necessary hook if one is defined
 		if ( notxml ) {
 			name = name.toLowerCase();
+
+            /**
+             * rboolean = /^(?:checked|selected|autofocus|autoplay|async|controls|defer|disabled|hidden|
+             *                  loop|multiple|open|readonly|required|scoped)$/i
+             */
+
 			hooks = jQuery.attrHooks[ name ] || ( rboolean.test( name ) ? boolHook : nodeHook );
 		}
 
@@ -381,14 +387,22 @@ jQuery.extend({
 	},
 
 	attrHooks: {
+        /**
+         input.value = "t";
+         input.setAttribute( "type", "radio" );
+         support.radioValue = input.value === "t"; IE678是false
+
+         如果是IE678 && input.setAttribute('type','radio');的时候，才会进入到下面这个判断
+         */
 		type: {
 			set: function( elem, value ) {
 				if ( !jQuery.support.radioValue && value === "radio" && jQuery.nodeName(elem, "input") ) {
 					// Setting the type on a radio button after the value resets the value in IE6-9
 					// Reset value to default in case type is set after value during creation
+                    //先将原来的值备份下来，然后设置新值，最后再设置回去
 					var val = elem.value;
 					elem.setAttribute( "type", value );
-					if ( val ) {
+					if ( val ) { //如果能转换为false，就跳出了
 						elem.value = val;
 					}
 					return value;
@@ -464,6 +478,11 @@ jQuery.extend({
 	}
 });
 
+/**
+ * rboolean = /^(?:checked|selected|autofocus|autoplay|async|controls|defer|disabled|hidden|
+ *                  loop|multiple|open|readonly|required|scoped)$/i
+ */
+
 // Hook for boolean attributes
 boolHook = {
 	get: function( elem, name ) {
@@ -508,10 +527,15 @@ boolHook = {
 };
 
 // fix oldIE value attroperty
+
+// getSetInput IE567891011测试通过
+// getSetAttribute IE67测试不过
+
 if ( !getSetInput || !getSetAttribute ) {
 	jQuery.attrHooks.value = {
 		get: function( elem, name ) {
 			var ret = elem.getAttributeNode( name );
+            //如果是input，那么就去defaultValue，如果不是，就用attributeNode取值
 			return jQuery.nodeName( elem, "input" ) ?
 
 				// Ignore the value *property* by using defaultValue
@@ -520,7 +544,7 @@ if ( !getSetInput || !getSetAttribute ) {
 				ret && ret.specified ? ret.value : undefined;
 		},
 		set: function( elem, value, name ) {
-			if ( jQuery.nodeName( elem, "input" ) ) {
+			if ( jQuery.nodeName( elem, "input" ) ) { //如果是input，换成defaultValue，如果不是，用nodeHook.set
 				// Does not return so that setAttribute is also used
 				elem.defaultValue = value;
 			} else {
@@ -536,6 +560,13 @@ if ( !getSetAttribute ) {
 
 	// Use this for any attribute in IE6/7
 	// This fixes almost every IE6/7 issue
+
+    /**
+     * <button value="abc">def</button>
+     * button.getAttribute('value') IE67-> def chrome->abc
+     * 所以这里需要转换一下
+     */
+
 	nodeHook = jQuery.valHooks.button = {
 		get: function( elem, name ) {
 			var ret = elem.getAttributeNode( name );
@@ -572,6 +603,11 @@ if ( !getSetAttribute ) {
 
 	// Set width and height to auto instead of 0 on empty string( Bug #8150 )
 	// This is for removals
+
+    /**
+     * $.attr('width','') --> setAttribute('width','auto');
+     */
+
 	jQuery.each([ "width", "height" ], function( i, name ) {
 		jQuery.attrHooks[ name ] = jQuery.extend( jQuery.attrHooks[ name ], {
 			set: function( elem, value ) {
@@ -666,3 +702,17 @@ jQuery.each([ "radio", "checkbox" ], function() {
 		}
 	});
 });
+
+/*
+* http://www.cnblogs.com/aaronjs/p/3387906.html
+*
+* getSetAttribute 浏览器是否区分固有属性和自定义属性
+*
+* var div = document.createElement('div');
+* div.setAttribute('className','t');
+* getSetAttribute = div.className !== 't';
+*
+* IE6,7 返回false，IE8+返回true
+*
+* http://www.cnblogs.com/aaronjs/p/3387906.html
+* /

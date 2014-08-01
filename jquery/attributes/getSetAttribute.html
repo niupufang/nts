@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+
+<script>
+
+    //判定浏览器是否区分固有属性和自定义属性
+    // jQuery
+    var div = document.createElement('div');
+    div.setAttribute('className', 't');
+    //console.log(div.className !== 't');
+
+    //var random = Math.random();
+    //mootools IE8失效
+    var ele = document.createElement('div');
+    ele.random = 'attribute';
+    //console.log(ele.getAttribute("random") !== 'attribute');
+
+    var element = document.createElement('div');
+    //element.setAttribute('className', 't');
+
+    document.body.appendChild(element);
+
+    // IE7
+    //console.log(element.getAttributeNode('class').value); // IE7 -> t || chrome-> error
+    //console.log(element.getAttribute('class')); // -> IE7 -> null || chrome -> null
+    //console.log(element.getAttribute('className')); // -> chrome -> t
+
+    function addAttr(name, value) {
+        element.setAttribute(name, value);
+    }
+
+    function getAttr(name) {
+        return element.getAttribute(name);
+    }
+
+    function getIE67Attr(name) {
+        var ret = element.getAttributeNode(name);
+
+        console.log(ret && ret.specified);
+
+        return ret ? ret.value : null;
+    }
+
+
+    addAttr('className', 'ttt');
+    console.log(getAttr('className')); // IE7-> ttt IE8+-> null
+    //在IE7下，这个getAttribute不能用，怎么办呢？
+    console.log(getIE67Attr('class'));
+
+    addAttr('class', 'sss');
+    console.log(getAttr('sss')); // all is null
+
+
+</script>
+</body>
+</html>
