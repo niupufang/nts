@@ -28,3 +28,8 @@
 2014.07.31
     --1.Deferred的then和when
     --2.DOM Ready，事件仅仅剩下change事件的修复
+2014.08.01
+    --1.event的change分析
+    --2.开始attributes
+2014.08.05
+    --1.zrender源码分析（剩余动画）

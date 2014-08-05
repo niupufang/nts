@@ -8,7 +8,7 @@
     b.Compass
 5.JQuery
     a.Animation
-    b.Event->doneing
+    b.Event->done
     c.Data->done
     d.Callback->done
     e.Defered->done
