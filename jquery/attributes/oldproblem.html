@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<input id="username" type="text" value="lonelyclick">
+
+<button value="abc" id="btn">def</button>
+<button id="btn2">btn2222</button>
+<button id="btn3">btn3</button>
+
+<div style="color:blue;" id="box">box</div>
+
+<a href="/get.do" id="baidu">baidu</a>
+<img src="../../bootstrap/images/backbone.png" alt="backbone" id="backbone">
+
+<select id="selecteddd">
+    <option>option1</option>
+</select>
+
+<input type="checkbox" id="checkonElement">
+
+<script>
+
+    window.onload = function () {
+
+        /**
+         * 兼容点1：
+         *      问题：在动态创建input是，如果先设置了值，再setAttribute type为radio的时候，input.value的值会丢失
+         *      浏览器：IE全系列
+         *      治疗方式：设置时，先将值保存起来
+         */
+
+        // $('input').attr('type','radio);
+        // attrHooks.type 的处理
+        var input = document.createElement('input');
+        input.value = 'ttt';
+        input.setAttribute('type', 'radio');
+        //alert(input.value); // 在IE下，弹出on 在chrome下，弹出ttt
+
+        //但是注意，这样不会出问题
+        var username = document.getElementById('username');
+        username.value = 'lonelyclick other';
+        username.setAttribute('type', 'radio');
+        //alert(username.value); //全部浏览器全部弹出lonelyclick other
+
+        //针对不兼容浏览器
+        function setInputRadioAttribute(input) {
+            var back = input.value;
+            input.setAltertitle('type', 'radio');
+            if (back) {
+                input.value = back;
+            }
+        }
+
+        /**
+         * 兼容点2：
+         *      问题：在为button.setAttribute('value','abc')会错误的将button.innerHTML设置为abc，get亦然
+         *      浏览器：IE6~7
+         *      治疗方式：用AttributeNode进行兼容
+         */
+
+        var btn = document.getElementById('btn');
+        //alert(btn.getAttribute('value')); //IE6~7 弹出def，其他弹出abc
+
+        var btn2 = document.getElementById('btn2');
+        btn2.setAttribute('value', 'seo');
+        //alert(btn2.innerHTML);// IE6~7 弹出seo，其他弹出btn2222
+
+        //针对不兼容浏览器
+        function setButtonValueAttribute(button, value) {
+            var an = document.createAttribute('value');
+            an.value = value;
+            button.setAttributeNode(an);
+        }
+
+        function getButtonValueAttribute(button) {
+            var an = button.getAttributeNode('value');
+            return an && an.specified ? an.value : undefined;
+        }
+
+        var btn3 = document.getElementById('btn3');
+
+        setButtonValueAttribute(btn3, 'somethingabc');
+        //alert(btn3.innerHTML); // btn3
+        //alert(btn3.getAttribute('value')); //somethingabc
+        //alert(getButtonValueAttribute(btn3)); //somethingabc
+
+
+        /**
+         * 兼容点3：
+         *      问题：element.setAttribute/getAttribute style 会出问题
+         *      浏览器：IE6~8
+         *      治疗方式：读取和设置element.style.cssText来代替setAttribute和getAttribute
+         */
+        var box = document.getElementById('box');
+        console.log(box.style); // 全部浏览器返回CSSStyleDeclaration
+        console.log(box.getAttribute('style')); // IE6~7 返回CSSStyleDeclaration，IE8返回COLOR:blue; 其他color:blue;
+        box.setAttribute('style', 'background:red;') //IE6~7不起作用，其他起作用
+
+        //针对不兼容浏览器
+        function setStyleAttribute(element, styleText) {
+            element.style.cssText = styleText + '';
+        }
+
+        function getStyleAttribute(element) {
+            return element.style.cssText;
+        }
+
+
+        /**
+         * 兼容点4：
+         *      问题：在W3C下，获得href和src是绝对的属性值，但是IE自作聪明，将其补全为绝对路径
+         *      浏览器：IE6~7
+         *      治疗方式：用IE特有的另一个参数！！！,2是指href的value值，4是补全
+         */
+        var baidu = document.getElementById('baidu');
+        console.log(baidu.href); // all is http://localhost:63342/get.do
+        console.log(baidu.getAttribute('href')); // IE6~7返回http://localhost:63342/get.do 其他返回/get.do
+
+        var backbone = document.getElementById('backbone');
+        console.log(backbone.getAttribute('src'));
+        console.log(backbone.src);
+        //IE6~7 http://localhost:63342/HTML5Exp/bootstrap/images/backbone.png
+        //其他返回 ../../bootstrap/images/backbone.png
+
+        //针对不兼容浏览器
+        //http://msdn.microsoft.com/en-us/library/ms536429%28VS.85%29.aspx
+        console.log(baidu.getAttribute('href', 2));
+        console.log(backbone.getAttribute('src', 2));
+
+        console.log(baidu.getAttribute('href', 4));
+        console.log(backbone.getAttribute('src', 4));
+
+        /**
+         * 兼容点5：
+         *      问题：在动态创建select时，加入一个option，然后取select.selected IE返回false，其他返回true
+         *      浏览器：IE全版本
+         *      治疗方式：访问一下select的selectedIndex属性，修复选择下标，如果有optgroup的话，也要访问optgroup的哦
+         */
+
+
+        //不会有问题
+        var selecteddd = document.getElementById('selecteddd');
+        console.log(selecteddd.options[0].selected);
+
+        var select = document.createElement('select');
+        var option = document.createElement('option');
+        option.innerHTML = 'option111';
+        option.value = 1;
+        select.appendChild(option);
+        document.body.appendChild(select);
+
+        console.log(option.selected); //IE6~7 false 其他true
+
+        //针对不兼容浏览器
+        select.selectedIndex;
+        console.log(option.selected); // true
+
+        /**
+         * 兼容点6：
+         *      问题：默认的radio或者checkbox的input，默认value为空字符串
+         *      浏览器：safair
+         *      治疗方式：如果有这个bug，就判断是否为'',如果为'',返回on就好了
+         */
+
+        var checkonElement = document.getElementById('checkonElement');
+        //alert(checkonElement.value); //safair为空字符串 其他为on
+
+        //针对不兼容浏览器
+        function getSafairRadioCheckboxValue(input) {
+            var v = input.value;
+            return v === '' ? 'on' : v;
+        }
+
+        /**
+         * 兼容点7：
+         *      问题：动态创建的input，如果设置checked或者selected为true，就不起作用的
+         *      浏览器：IE6~7
+         *      治疗方式：用defaultChecked和defaultSelected替换之
+         *
+         *      http://www.cnblogs.com/rubylouvre/p/3524113.html
+         *      http://www.cnblogs.com/snandy/archive/2012/05/06/2473936.html
+         *      http://www.cnblogs.com/rubylouvre/p/3524113.html
+         */
+
+        var defaultCheckedInput = document.createElement('input');
+        defaultCheckedInput.type = 'checkbox';
+        defaultCheckedInput.checked = true; //无效，在浏览器上可以看到，没有被选中
+        document.body.appendChild(defaultCheckedInput);
+
+        //针对不兼容浏览器
+        var defaultCheckedInput = document.createElement('input');
+        defaultCheckedInput.type = 'checkbox';
+        defaultCheckedInput.defaultChecked = true; //被选中
+        document.body.appendChild(defaultCheckedInput);
+
+    };
+
+
+</script>
+
+</body>
+</html>

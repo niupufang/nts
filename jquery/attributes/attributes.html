@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div id="parent">
+    <div id="box" test1="test2" game1="gamesomeabc">box content</div>
+
+    <input type="radio" checked="checked" id="someRadio">
+
+</div>
+
+
+<script>
+    var box = document.getElementById('box');
+
+    /*box.setAttribute('className','ttt');
+     alert(box.getAttribute('className'));
+     alert(box.className);*/
+
+    //box.setAttribute('test1', 'abc');
+    //alert(box.test1); //IE6/IE7 弹出abc IE8+弹出undefined
+
+    //var someRadio = document.getElementById('someRadio');
+    //alert(someRadio.checked + '--' + someRadio.getAttribute('checked')); //IE6/7 弹出 true--true IE8+ true--checked
+
+
+    //box.getAttributeNode('test1')
+
+
+    //alert(box.getAttribute('customattribute'));
+    //alert(box.customattribute);
+
+
+    function setIE67Attribute(box, key, value) {
+        var attributeNode = document.createAttribute(key);
+        box.setAttributeNode(attributeNode);
+        attributeNode.value = value;
+    }
+
+    function getIE67Attribute(box, key) {
+        var ret = box.getAttributeNode(key);
+        return ret && ret.specified ? ret.value : undefined;
+    }
+
+    setIE67Attribute(box, 'customkey', 'customvalue');
+    alert(getIE67Attribute(box, 'customkey')); //customvalue
+    alert(box.customkey);//customvalue
+    box.abc = 'def';
+    alert(getIE67Attribute(box, 'abc'));//abc
+    //alert(box.getAttribute('abc'));//abc
+</script>
+
+</body>
+</html>

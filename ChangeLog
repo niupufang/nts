@@ -33,3 +33,5 @@
     --2.开始attributes
 2014.08.05
     --1.zrender源码分析（剩余动画）
+2014.08.08
+    --1.持续分析jQuery attributes模块（兼容性）
