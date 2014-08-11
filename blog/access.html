@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>jQuery.access源码分析</title>
+</head>
+<body>
+<h2>基本理解</h2>
+
+<p>
+    jQuery.attr是jQuery.attr，jQuery.prop，jQuery.css提供底层支持，jQuery里一个比较有特色的地方就是函数的重载,
+    比如attr，有如下几种重载
+<ul>
+    <li>$('#box').attr('title')</li>
+    <li>$('#box').attr('title','标题')</li>
+    <li>$('#box').attr({title:'标题',data-menu-toggle:'dropdown'})</li>
+    <li>$('#box').attr('title',function () {....})</li>
+</ul>
+但是纵观jQuery.attr代码中，却没有判断value是不是存在啊之类的，ok，你猜对了，在access里实现了
+</p>
+
+<h2>源码分析</h2>
+
+<h3>大致思路</h3>
+<ul>
+    <ol>1.首先判断key值是不是一个object，如果是，遍历key，递归调用jQuery.access，并将是否可以链式调用的标志位设置为true</ol>
+    <ol>2.判断value值是否已经定义，如果已经定义，说明是个set操作</ol>
+    <ul>
+        <ol>2.1 set操作的是可链式调用的</ol>
+        <ol>2.2 如果value不是function，设置raw为true</ol>
+        <ol>2.3 判断key值是否为null或者undefined，key若为空值</ol>
+        <ul>
+            <ol>2.3.1 如果value不是个函数，或者强制赋值raw为true，那么调用fn，可能是以下调用：$('#box').attr(null,{abc:'def',a:'1'})</ol>
+            <ol>2.3.1 如果value是个函数，将fn包装之，改变原来fn的作用域和参数</ol>
+        </ul>
+        <ol>2.4 如果fn存在，遍历jQuery内部元素，分别执行set操作</ol>
+    </ul>
+    <ol>3.首先判断是否为set方法，如果是，返回 elems，如果不是执行get操作（如果jQuery内部length为0，返回指定的默认空值）</ol>
+</ul>
+<h2>源码</h2>
+
+<div>这里是源码</div>
+<h2>ExtJS 中的flexSetter方法</h2>
+
+<p>这让我猛然想起了Ext的flexSetter方法，该方法在Ext.Function.flexSetter
+    详细API请看<a target="_blank"
+              href="http://docs.sencha.com/extjs/5.0.0/apidocs/#!/api/Ext.Function-method-flexSetter">这里</a>
+<h3>用法：</h3>
+<h3>源码</h3>
+
+</p>
+
+<p>总结：很显然，Ext的flexSetter没有jQuery的强大，但是够严谨</p>
+
+
+
+<script>
+    var ele = document.getElementById('box');
+
+    function setAttribute(name, value) {
+        ele.setAttribute(name, value);
+    }
+
+    var flexSetAttribute = Ext.Function.flexSetter(setAttribute);
+
+    flexSetAttribute('title', '标题');
+    flexSetAttribute({
+        'abc': 'otherattribu',
+        'other': 1
+    });
+
+
+    /**
+     * 1.关于Ext.enumerables的实现
+     *
+     * 这里为了兼容某些浏览器的toString,valueOf等内置方法不能被遍历出来的bug
+     * var o = {toString:111,valueOf:222};
+     *
+     * for (var oo in o)
+     * {
+           alert(oo);
+       }
+     *
+     */
+    var enumerables = [//'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable',
+                'valueOf', 'toLocaleString', 'toString', 'constructor'];
+
+    for (i in { toString: 1 }) {
+        enumerables = null;
+    }
+
+    Ext.Function = {
+        flexSetter: function(setter) {
+            return function(name, value) { // 返回一个闭包
+                var k, i;
+
+                if (name !== null) {
+                    if (typeof name !== 'string') { //如果name不是字符串，这里就认为是对象，进行for in
+                        for (k in name) {
+                            if (name.hasOwnProperty(k)) {
+                                setter.call(this, k, name[k]); //逐个调用setter
+                            }
+                        }
+
+                        if (Ext.enumerables) {
+                            for (i = Ext.enumerables.length; i--;) {
+                                k = Ext.enumerables[i];
+                                if (name.hasOwnProperty(k)) {
+                                    setter.call(this, k, name[k]);
+                                }
+                            }
+                        }
+                    } else {
+                        setter.call(this, name, value); // 如果是个字符串，直接调用了
+                    }
+                }
+
+                return this;
+            };
+        }
+    };
+
+
+
+
+</script>
+</body>
+</html>

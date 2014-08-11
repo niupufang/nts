@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <h2>回顾</h2>
+    <p>有了之前的几篇对于jQuery.attributes相关的研究，是时候分析jQuery.attr的源码了，之前的文章</p>
+    <ul>
+        <li><a target="_blank" href="http://www.cnblogs.com/hhstuhacker/p/javascript-attribute-property-inside.html">Javascript中的attribute和property分析</a></li>
+        <li><a target="_blank" href="http://www.cnblogs.com/hhstuhacker/p/3899042.html">attribute和property兼容性分析</a> </li>
+        <li><a target="_blank" href="http://www.cnblogs.com/hhstuhacker/p/jquery-access-source-advance.html">jQuery.access源码分析</a> </li>
+    </ul>
+
+    <h2>关于jQuery的hasClass/addClass/removeClass/toggleClass</h2>
+    <ul>
+        <li>1.承袭jQuery一贯的风格，对函数的重载做的相当不错，不仅可以传入单个类名，而且可以传入用空格分隔的类型，传入函数</li>
+        <li>
+            <div>2.addClass思路：</div>
+            <ul>
+                <ol>1.判断value是否为函数，如果是，遍历jQuery内部所有元素，传入函数返回值，jQuery.addClass之</ol>
+                <ol>2.将传入的className进行处理，双层循环，一层循环所有元素，一层循环所有类名</ol>
+                <ol>3.添加className时进行判断，如果当前元素的className为空，直接赋值，如果不为空，判断当前需要插入的类名是否存在，如果不存在，拼接进入缓存类名字符串</ol>
+                <ol>4.将缓存类名字符串设置进入元素的className</ol>
+            </ul>
+        </li>
+        <li>3.removeClass与addClass如出一辙，删除前依旧进行判断是否存在</li>
+        <li>4.hasClass：将元素的当前类名取出，用字符串的indexOf方法进行判断是否存在</li>
+        <li>
+            <div>5.toggleClass：</div>
+            <ul>
+                <ol>1.处理传入函数的可能</ol>
+                <ol>2.遍历jQuery所有元素，如果value值是个字符串，遍历所有类名，用addClass和removeClass进行状态转换</ol>
+                <ol>3.如果type没有传入，或者type是字符串，判断是否value为false，如果是，就将className设置为空，否则，将className从缓存系统里取出来，设置回去</ol>
+            </ul>
+        </li>
+    </ul>
+    <div>class代码</div>
+    <h2>关于jQuery.attr和jQuery.prop</h2>
+    <ul>
+        <li>1.依赖jQuery.access保证传参的灵活性</li>
+        <li>2.对于很多种意外情况进行判断过滤（注释节点、xml等、falsh没有getAttribute等）</li>
+        <li>3.运用钩子机制，解决浏览器的兼容问题，为了兼容IE6-8确实做了不少钩子，也够辛苦，也保证了可扩展性，很明显,jQuery 2.x却没有那么多的钩子的兼容</li>
+    </ul>
+    <div>attr和prop代码</div>
+    <h3>关于钩子</h3>
+    <p>
+        在之前的文章中，有关于这方面浏览器的兼容性分析，但是还不完全 <a href="http://www.cnblogs.com/hhstuhacker/p/3899042.html">attribute和property兼容性分析</a>
+        关于tabIndex，请参考司徒正美大牛的 <a href="http://www.cnblogs.com/rubylouvre/archive/2009/12/07/1618182.html" target="_blank"> tabIndex属性</a>总结的比较好！
+        boolHook的原因请看下sandy的 <a href="http://www.cnblogs.com/snandy/archive/2011/09/01/2162088.html" target="_blank">各浏览器中使用getAttribute获取checkbox/radio的checked值不同</a>
+        其他的情况在代码中都已经有了注释
+    </p>
+
+    <h3>关于val</h3>
+    <p>
+        val方法主要做的就是对于option和select的兼容性的处理，正常情况下直接取Element.vlaue进行操作，亮点依旧在钩子技术和参数重载上
+    </p>
+
+    <h4>
+        参考
+    </h4>
+    <ul>
+        <li>http://www.cnblogs.com/aaronjs/p/3387906.html</li>
+        <li>http://www.cnblogs.com/aaronjs/p/3387906.html</li>
+        <li>http://www.jb51.net/article/50686.htm</li>
+        <li>http://www.liyao.name/2013/09/differences-between-property-and-attribute-in-javascript.html</li>
+        <li>http://www.cnblogs.com/rubylouvre/archive/2010/03/07/1680403.html</li>
+        <li>http://ju.outofmemory.cn/entry/36093</li>
+        <li>http://www.cnblogs.com/aaronjs/p/3387906.html</li>
+        <li>http://www.jb51.net/article/29263.htm</li>
+        <li>http://www.cnblogs.com/wangfupeng1988/p/3631853.html</li>
+        <li>http://www.cnblogs.com/wangfupeng1988/p/3639330.html</li>
+        <li>http://www.cnblogs.com/wangfupeng1988/p/3626300.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/09/01/2155445.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/09/03/2163702.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/08/27/2155300.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/08/28/2155787.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/08/27/2155718.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/09/01/2155445.html</li>
+        <li>http://www.cnblogs.com/snandy/archive/2011/09/01/2162088.html</li>
+    </ul>
+</body>
+</html>

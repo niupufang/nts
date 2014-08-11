@@ -901,19 +901,44 @@ jQuery.extend({
 
 	// Multifunctional method to get and set values of a collection
 	// The value/s can optionally be executed if it's a function
+    /**
+    attr: function (name, value) {
+        return jQuery.access(this, jQuery.attr, name, value, arguments.length > 1);
+    },
+     *
+     * @param elems jQuery的this
+     * @param fn 函数
+     * @param key 属性
+     * @param value 值
+     * @param chainable 是否可以链式调用，如果是get动作，为false，如果是set动作，为true
+     * @param emptyGet 如果jQuery没有选中到元素的返回值
+     * @param raw value是否为原始数据，如果raw是true，说明value是原始数据，如果是false，说明raw是个函数
+     * @returns {*}
+     */
 	access: function( elems, fn, key, value, chainable, emptyGet, raw ) {
 		var i = 0,
 			length = elems.length,
-			bulk = key == null;
+			bulk = key == null; // bulk 体积，容量；大多数，大部分；大块
 
 		// Sets many values
+        /**
+         * 如果参数key是对象，表示要设置多个属性，则遍历参数key，遍历调用access方法
+         *
+         * $('#box').attr({data:1,def:'addd'});
+         */
 		if ( jQuery.type( key ) === "object" ) {
-			chainable = true;
+			chainable = true; //表示可以链式调用
 			for ( i in key ) {
 				jQuery.access( elems, fn, i, key[i], true, emptyGet, raw );
 			}
 
 		// Sets one value
+
+            /**
+             * $('#box').attr('customvalue','abc')
+             * $('#box').attr('customvalue',function (value) {});
+             */
+
 		} else if ( value !== undefined ) {
 			chainable = true;
 
@@ -921,14 +946,29 @@ jQuery.extend({
 				raw = true;
 			}
 
-			if ( bulk ) {
+			if ( bulk ) { // if (key == null && value !== undefined)
 				// Bulk operations run against the entire set
+                /**
+                 * $('#box').attr(undefined,'abc')
+                 *
+                 * jQuery.attr.call(elems,value); 调用完毕之后，将fn设置为空
+                 */
 				if ( raw ) {
 					fn.call( elems, value );
 					fn = null;
 
 				// ...except when executing function values
-				} else {
+                    /**
+                     * $('#box').attr(undefined,function () {})
+                     *
+                     * fn = bulk = jQuery.attr;
+                     *
+                     * fn = function (elem, key, value) {
+                     *  return jQuery.attr.call(jQuery(elem),value);
+                     * }
+                     *
+                     */
+				} else { //如果key有值的话，好办，这里的bulk是为了节省一个变量，将fn用bulk存起来，然后封装fn的调用
 					bulk = fn;
 					fn = function( elem, key, value ) {
 						return bulk.call( jQuery( elem ), value );
@@ -936,13 +976,37 @@ jQuery.extend({
 				}
 			}
 
-			if ( fn ) {
+            //jQuery.access(elems,jQuery.attr,)
+
+
+            //如果fn存在，掉调用每一个元素，无论key是否有值，都会走到这个判断，执行set动作
+			if ( fn ) { // 递归调用之
 				for ( ; i < length; i++ ) {
-					fn( elems[i], key, raw ? value : value.call( elems[i], i, fn( elems[i], key ) ) );
+					fn( elems[i], key,
+                        raw ? value :
+                        /**
+                         * 如果value是原始数据，就取value，如果是个函数，就调用这个函数取值
+                         * $('#box').attr('abc',function (index,value) { index指向当前元素的索引,value指向oldValue
+                         *
+                         *  先调用jQuery.attr(elements[i],key) 取到当前的值,然后调用传入的fn值
+                         * });
+                         */
+
+
+                            value.call( elems[i], i, fn( elems[i], key ) )
+                    );
 				}
 			}
 		}
 
+        /**
+         * 如果chainable为true，说明是个set方法，就返回elems
+         * 否则说明是get方法
+         * 1.如果bulk是个true，说明没有key值，调用fn，将elems传进去
+         * 2.如果bulk为false，说明key有值哦，然后判断元素的长度是否大于0
+         *    2.1 如果大于0，调用fn，传入elems[0]和key，完成get
+         *    2.2 如果为0，说明传参有问题，返回指定的空值emptyGet
+         */
 		return chainable ?
 			elems :
 

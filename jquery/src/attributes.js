@@ -24,9 +24,10 @@ jQuery.fn.extend({
     },
 
     removeProp: function (name) {
-        name = jQuery.propFix[ name ] || name;
+        name = jQuery.propFix[ name ] || name; //先取钩子
         return this.each(function () {
             // try/catch handles cases where IE balks (such as removing a property on window)
+            // delete window['abc'] // IE6~8 对象不支持此操作
             try {
                 this[ name ] = undefined;
                 delete this[ name ];
@@ -49,6 +50,8 @@ jQuery.fn.extend({
          * $('#box').addClass(function (elem,oldClassName) {
          *      return 'm-general-abc';
          * });
+         *
+         * 如果是个函数，那么逐个遍历现有元素，递归addClass方法
          */
         if (jQuery.isFunction(value)) {
             return this.each(function (j) {
@@ -56,20 +59,21 @@ jQuery.fn.extend({
             });
         }
 
+        // 如果是个字符串，那就执行正真的添加
         if (proceed) {
             // The disjunction here is for better compressibility (see removeClass)
-            classes = ( value || "" ).match(core_rnotwhite) || [];
+            classes = ( value || "" ).match(core_rnotwhite) || []; //将value用空格分开成一个数组 classes = value.split(/\s+/);
 
-            for (; i < len; i++) {
+            for (; i < len; i++) { //遍历所有的元素
                 elem = this[ i ];
                 cur = elem.nodeType === 1 && ( elem.className ? //检测是否为HTMLElement
                     ( " " + elem.className + " " ).replace(rclass, " ") : //去掉换行什么的，两边加上空格，防止出错
-                    " "
+                    " " //如果没有class的话，那就等于一个空格
                     );
 
                 if (cur) {
                     j = 0;
-                    while ((clazz = classes[j++])) {
+                    while ((clazz = classes[j++])) { //遍历所有的classes
                         if (cur.indexOf(" " + clazz + " ") < 0) { //如果没有的话，才加入，如有，跳出了就
                             cur += clazz + " ";
                         }
@@ -119,6 +123,7 @@ jQuery.fn.extend({
             }
         }
 
+        // 链式结构,返回被封装的元素
         return this;
     },
 
@@ -153,13 +158,18 @@ jQuery.fn.extend({
                     state = stateVal,
                     classNames = value.match(core_rnotwhite) || [];
 
-                while ((className = classNames[ i++ ])) {
+                while ((className = classNames[ i++ ])) { //遍历所有的classNames
                     // check each className given, space separated list
+
+                    //如果stateVal是布尔值，那么就去state，如果不是，就看hasClass是否有
+                    //按照逻辑，执行添加或者删除class函数
                     state = isBool ? state : !self.hasClass(className);
                     self[ state ? "addClass" : "removeClass" ](className);
                 }
 
                 // Toggle whole class name
+                // 如果没有传入type或者type是个布尔值，那么就取当前DOM元素的className属性，用缓存系统将__className__设置成当前的className
+                //
             } else if (type === core_strundefined || type === "boolean") {
                 if (this.className) {
                     // store className if set
@@ -170,6 +180,7 @@ jQuery.fn.extend({
                 // then remove the whole classname (if there was one, the above saved it).
                 // Otherwise bring back whatever was previously saved (if anything),
                 // falling back to the empty string if nothing was stored.
+                // 这里就判断是否value为false，如果是，就将className设置为空，否则，将className从缓存系统里取出来，设置回去
                 this.className = this.className || value === false ? "" : jQuery._data(this, "__className__") || "";
             }
         });
@@ -197,6 +208,12 @@ jQuery.fn.extend({
         var ret, hooks, isFunction,
             elem = this[0];
 
+        /**
+         * 如果没有传值，说明是取值 $('#box').val()
+         * 1.先通过elem.type或者elem.nodeName取得钩子
+         * 2.如果钩子存在，并且钩子的返回值不是undefined，那么返回钩子返回的值
+         * 3.如果没有进入钩子，那就简单处理下得到的值，返回之
+         */
         if (!arguments.length) {
             if (elem) {
                 hooks = jQuery.valHooks[ elem.type ] || jQuery.valHooks[ elem.nodeName.toLowerCase() ];
@@ -209,8 +226,10 @@ jQuery.fn.extend({
 
                 return typeof ret === "string" ?
                     // handle most common string cases
+                    // 如果ret是个字符串，将字符串去掉回车什么的，返回
                     ret.replace(rreturn, "") :
                     // handle cases where value is null/undef or number
+                    // 如果不是字符串，那就看看是不是undefined或者null，如果是返回空字符，如果不是，那就返回ret了
                         ret == null ? "" : ret;
             }
 
@@ -219,14 +238,25 @@ jQuery.fn.extend({
 
         isFunction = jQuery.isFunction(value);
 
+        /**
+         * 可以传入以下值：
+         * $('.box').val(function (index,value) {
+         *
+         * });
+         *
+         * $('.box').val([1,2,3,4,5]);
+         *
+         */
         return this.each(function (i) {
             var val,
                 self = jQuery(this);
 
+            //如果不是node节点，返回之
             if (this.nodeType !== 1) {
                 return;
             }
 
+            //如果是个函数，执行之
             if (isFunction) {
                 val = value.call(this, i, self.val());
             } else {
@@ -234,6 +264,9 @@ jQuery.fn.extend({
             }
 
             // Treat null/undefined as ""; convert numbers to string
+            //将null undefined 转换成空字符串
+            //将数字转换为字符串
+            //转换数组，将数组中的元素全部转换为字符串
             if (val == null) {
                 val = "";
             } else if (typeof val === "number") {
@@ -244,8 +277,11 @@ jQuery.fn.extend({
                 });
             }
 
+            // 取得钩子
             hooks = jQuery.valHooks[ this.type ] || jQuery.valHooks[ this.nodeName.toLowerCase() ];
 
+            // 如果进入了钩子，就用钩子中的设置方法
+            // 如果没有进入钩子，那就直接设置this.value = val; 这里的this指向的是单个的DOM元素
             // If set returns undefined, fall back to normal setting
             if (!hooks || !("set" in hooks) || hooks.set(this, val, "value") === undefined) {
                 this.value = val;
@@ -258,6 +294,8 @@ jQuery.extend({
     valHooks: {
         option: {
             get: function (elem) {
+                // specified:检测是否在HTML中设置了属性值，设置了返回true，否者返回false
+                // 因为select下的option有value和text两种值，如果存在value属性，将返回value值，否者返回option的text文本
                 // attributes.value is undefined in Blackberry 4.7 but
                 // uses .value. See #6932
                 var val = elem.attributes.value;
@@ -265,10 +303,15 @@ jQuery.extend({
             }
         },
         select: {
+
+            // http://blog.csdn.net/liyong199012/article/details/8161621
             get: function (elem) {
                 var value, option,
                     options = elem.options,
-                    index = elem.selectedIndex,
+                    index = elem.selectedIndex, //选中的索引，如果没有选中的话，默认为0
+
+
+
                     one = elem.type === "select-one" || index < 0,
                     values = one ? null : [],
                     max = one ? index + 1 : options.length,
@@ -283,6 +326,22 @@ jQuery.extend({
                     // oldIE doesn't update selected after form reset (#2551)
                     if (( option.selected || i === index ) &&
                         // Don't return options that are disabled or in a disabled optgroup
+                        //如果option是禁用的，或者被禁用的optGroup元素中的option，不返回值
+                        // <option disabled="disabled"> 或者 <optgroup disabled="disabled"><option>111</option></optgroup>
+                    /**
+                     *  select.disabled = true;
+                        support.optDisabled = !opt.disabled;
+
+                        在老版本的Safari浏览器中，如果selected的disabled设置为true，option也会被自动的将disabled设置为true
+
+                        !option.disabled -> 没有被禁用 如果safari的话，就看HTMLTag中是否指定了disabled为true
+
+                        !option.parentNode.disabled || !jQuery.nodeName(option.parentNode, "optgroup")相当于
+                        !(option.parentNode.disabled && jQuery.nodeName(option.parentNode, "optgroup"))意思是：
+                        如果不是（option的父元素为optgroup，并且disabled为true）
+
+                        总之，也就是判断option的disabled不是为true
+                     */
                         ( jQuery.support.optDisabled ? !option.disabled : option.getAttribute("disabled") === null ) &&
                         ( !option.parentNode.disabled || !jQuery.nodeName(option.parentNode, "optgroup") )) {
 
@@ -290,18 +349,26 @@ jQuery.extend({
                         value = jQuery(option).val();
 
                         // We don't need an array for one selects
+                        //如果是单选，直接返回值
                         if (one) {
                             return value;
                         }
 
                         // Multi-Selects return an array
+                        // 如果是多选，把值放入数组中
                         values.push(value);
                     }
                 }
 
+                //多选时，返回一个数组
                 return values;
             },
 
+            /**
+             * 先将value转换为数组，然后逐个遍历option元素
+             * 如果option的val在value数组中时，设置option的selected为true
+             * 如果一个都没有命中的话，修正selectedIndex的值为-1
+             */
             set: function (elem, value) {
                 var optionSet, option,
                     options = elem.options,
@@ -527,14 +594,21 @@ jQuery.extend({
     propHooks: {
         //http://www.cnblogs.com/rubylouvre/archive/2009/12/07/1618182.html
         //http://www.w3help.org/zh-cn/causes/SD2021
+        //http://aokunsang.iteye.com/blog/835787
         tabIndex: {
             get: function (elem) {
                 // elem.tabIndex doesn't always return the correct value when it hasn't been explicitly set
                 // http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+                // tabIndex不总是返回正确的值，所以要用getAttributeNode进行取值，详情请膜拜司徒正美的文章
                 var attributeNode = elem.getAttributeNode("tabindex");
 
+                /**
+                 * 这里是针对IE6~8的情况，因为这几个浏览器是不会区分div的tabIndex的，而标准浏览器会返回-1
+                 */
                 return attributeNode && attributeNode.specified ?
                     parseInt(attributeNode.value, 10) :
+
+                        //如果没有指定，那就判断是不是超链接或者表单元素，如果是，返回0，如果不是，返回undefined
                         rfocusable.test(elem.nodeName) || rclickable.test(elem.nodeName) && elem.href ?
                     0 :
                     undefined;
@@ -847,6 +921,8 @@ if (!jQuery.support.enctype) {
 
 // Radios and checkboxes getter/setter
 /**
+ * $('input[type=radio]').val();
+ *
  *  获取radio/checkbox的value属性默认值
  *  safair默认为""空字符串,其他为on
  *
@@ -866,6 +942,10 @@ if (!jQuery.support.checkOn) {
 
 /**
  * 针对radio和checkbox多选操作,在val里面传入数组
+ * 如果当前input的value值在value数组中，那么，将之选中(elem.checked = true)
+ *
+ * $('input[type=radio]').val([1,2,3,4,5,6]);
+ *
  */
 jQuery.each([ "radio", "checkbox" ], function () {
     jQuery.valHooks[ this ] = jQuery.extend(jQuery.valHooks[ this ], {
@@ -878,7 +958,7 @@ jQuery.each([ "radio", "checkbox" ], function () {
 });
 
 /*
- * http://www.cnblogs.com/aaronjs/p/3387906.html
+ *
  *
  * getSetAttribute 浏览器是否区分固有属性和自定义属性
  *
@@ -888,9 +968,9 @@ jQuery.each([ "radio", "checkbox" ], function () {
  *
  * IE6,7 返回false，IE8+返回true
  *
- *   http://www.cnblogs.com/aaronjs/p/3387906.html
- *
- *   http://www.jb51.net/article/50686.htm
+ http://www.cnblogs.com/aaronjs/p/3387906.html
+ http://www.cnblogs.com/aaronjs/p/3387906.html
+ http://www.jb51.net/article/50686.htm
  http://www.liyao.name/2013/09/differences-between-property-and-attribute-in-javascript.html
  http://www.cnblogs.com/rubylouvre/archive/2010/03/07/1680403.html
  http://ju.outofmemory.cn/entry/36093
@@ -900,6 +980,12 @@ jQuery.each([ "radio", "checkbox" ], function () {
  http://www.cnblogs.com/wangfupeng1988/p/3639330.html
  http://www.cnblogs.com/wangfupeng1988/p/3626300.html
  http://www.cnblogs.com/snandy/archive/2011/09/01/2155445.html
+ http://www.cnblogs.com/snandy/archive/2011/09/03/2163702.html
+ http://www.cnblogs.com/snandy/archive/2011/08/27/2155300.html
+ http://www.cnblogs.com/snandy/archive/2011/08/28/2155787.html
+ http://www.cnblogs.com/snandy/archive/2011/08/27/2155718.html
+ http://www.cnblogs.com/snandy/archive/2011/09/01/2155445.html
+ http://www.cnblogs.com/snandy/archive/2011/09/01/2162088.html
 
  http://jsdashi.com/develop/jquery-1.9/
 

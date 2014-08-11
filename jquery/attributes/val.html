@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<select id="demo1" multiple="multiple">
+    <option value="" id="someoption">1</option>
+    <option value="b" selected="selected">2</option>
+    <option value="c">3</option>
+</select>
+
+<form>
+
+    <input type="text" tabindex="2"/>
+    <input type="text" tabindex="1">
+</form>
+
+<script>
+
+    var someoption = document.getElementById('someoption');
+    console.log(someoption.attributes.value);
+    console.log(someoption.text);
+
+    var demo1 = document.getElementById('demo1');
+    console.log(demo1.type, demo1.selectedIndex);
+
+    demo1.disabled = true;
+    console.log(someoption.disabled);
+
+    var inputs = document.getElementsByTagName('INPUT');
+
+    var i = inputs[0];
+
+    //alert(inputs[0].tabIndex);
+
+    var attr = i.getAttributeNode('tabIndex');
+
+    console.log(attr.value, attr.name, attr.specified);
+
+
+</script>
+</body>
+</html>
