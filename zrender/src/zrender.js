@@ -137,6 +137,8 @@ define(
             this.painter = new Painter(dom, this.storage);
             this.handler = new Handler(dom, this.storage, this.painter);
 
+            window.z = this; // 把z透漏出去
+
             // 动画控制
             this.animatingShapes = [];
             this.animation = new Animation({

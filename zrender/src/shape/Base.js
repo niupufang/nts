@@ -467,6 +467,8 @@ define(
                                 ty = rect.y + rect.height / 2;
                                 al = 'center';
                                 bl = 'middle';
+                                // 如果brushType为both或者fill，那么就会有fill动作，这时，如果文字颜色跟填充颜色相同，文字就看不见了，所以把它变成白色
+                                // 但是，如果文字颜色是白色呢，哎，不想了，太变态
                                 if (style.brushType != 'stroke'
                                     && textColor == style.color
                                 ) {
@@ -474,7 +476,7 @@ define(
                                 }
                                 break;
                             case 'left':
-                                tx = rect.x - dd;
+                                tx = rect.x - dd; //间隙
                                 ty = rect.y + rect.height / 2;
                                 al = 'end';
                                 bl = 'middle';

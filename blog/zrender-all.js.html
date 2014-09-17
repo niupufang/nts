@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>zrender源码分析1：总体结构</title>
+</head>
+<body>
+<h2>开始</h2>
+
+<p>
+    zrender（Zlevel Render） 是一个轻量级的Canvas类库，这里是GitHub的网址 <a href="http://ecomfe.github.io/zrender/"
+                                                           target="_blank">点我</a>，
+    类似的类库有<a href="http://kineticjs.com/" target="_blank">Kinetic.JS</a>、<a href="http://www.createjs.com/#!/EaselJS"
+                                                                            target="_blank">EaselJS</a>。
+    但貌似都没有zrender好用（可能是更加符合国人的习惯），强大的图表工具<a href="http://echarts.baidu.com/" target="_blank">echarts</a>就是在zrender基础上建立，
+    用zrender和echarts做了两个关于canvas的两个可视化项目之后，忍不住看了下zrender的项目代码（也有需要修改源代码的缘故），
+    但是翻开之后，代码的结构比较清晰，注释也都是中文，比较容易读懂。最大的感想就是，沒有像jQuery之类的对于代码极(bian)度(tai)的精简追求，各种意图一看便知。
+    如果对于zrender的api不熟悉，请移步github上，这里只对源码进行了一些详(qian)细(xian)的分析。
+</p>
+
+<h2>总体结构</h2>
+
+<p>
+    关于总体结构，最贴切的描述恐怕也没这一张图来的爽：
+    <img src="http://static.oschina.net/uploads/img/201307/24230527_6ykq.png" alt="zrender结构图" style="display: block;">
+    从github将项目clone下来之后，打开src/zrender.js之后，有如下发现：
+
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">
+var _instances = {};    //ZRender实例map索引
+
+var zrender = {};
+zrender.version = '2.0.0';
+
+/**
+ * zrender初始化
+ * 不让外部直接new ZRender实例，为啥？
+ * 不为啥，提供全局可控同时减少全局污染和降低命名冲突的风险！
+ *
+ * @param {HTMLElement} dom dom对象，不帮你做document.getElementById了
+ * @param {Object=} params 个性化参数，如自定义shape集合，带进来就好
+ *
+ * @return {ZRender} ZRender实例
+ */
+zrender.init = function(dom, params) {
+    var zi = new ZRender(guid(), dom, params || {});
+    _instances[zi.id] = zi;
+    return zi;
+};
+</span></pre>
+</div>
+
+我想这里已经很明显，用zrender.init(dom)初始化的时候，直接new一个内部的ZRender对象进行返回，原因我想作者已经写的很明白了（提供全局可控同时减少全局污染和降低命名冲突的风险！）
+总比每次new ZRender()好多了，最起码看起来是这样，并且把每个实例就行保存，便于维护。
+至于周围的其他的三个方法，dispose,getInstance,delInstance 就没什么可说的了，不过在项目中，也怎么用得上。
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">
+/**
+ * zrender实例销毁，记在_instances里的索引也会删除了
+ * 管生就得管死，可以通过zrender.dispose(zi)销毁指定ZRender实例
+ * 当然也可以直接zi.dispose()自己销毁
+ *
+ * @param {ZRender=} zi ZRender对象，不传则销毁全部
+ */
+zrender.dispose = function (zi) {
+    if (zi) {
+        zi.dispose();
+    }
+    else {
+        for (var key in _instances) {
+            _instances[key].dispose();
+        }
+        _instances = {};
+    }
+
+    return zrender;
+};
+
+/**
+ * 获取zrender实例
+ *
+ * @param {string} id ZRender对象索引
+ */
+zrender.getInstance = function (id) {
+    return _instances[id];
+};
+
+/**
+ * 删除zrender实例，ZRender实例dispose时会调用，
+ * 删除后getInstance则返回undefined
+ * ps: 仅是删除，删除的实例不代表已经dispose了~~
+ *     这是一个摆脱全局zrender.dispose()自动销毁的后门，
+ *     take care of yourself~
+ *
+ * @param {string} id ZRender对象索引
+ */
+zrender.delInstance = function (id) {
+    delete _instances[id];
+    return zrender;
+};
+</span></pre>
+</div>
+接下来就是核心的ZRender构造函数，这里可以很清晰的看到M(Storage)V(Painter)C(Handler)的结构.
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">
+/**
+ * ZRender接口类，对外可用的所有接口都在这里！！
+ * storage（M）、painter（V）、handler（C）为内部私有类，外部接口不可见
+ * 非get接口统一返回支持链式调用~
+ *
+ * @param {string} id 唯一标识
+ * @param {HTMLElement} dom dom对象，不帮你做document.getElementById
+ *
+ * @return {ZRender} ZRender实例
+ */
+function ZRender(id, dom) {
+    this.id = id;
+    this.env = require('./tool/env');
+
+    this.storage = new Storage();
+    this.painter = new Painter(dom, this.storage);
+    this.handler = new Handler(dom, this.storage, this.painter);
+
+    // 动画控制
+    this.animatingShapes = [];
+    this.animation = new Animation({
+        stage : {
+            update : getAnimationUpdater(this)
+        }
+    });
+    this.animation.start();
+}
+</span></pre>
+</div>
+<ul>
+    <li>Storage只是JS对象级别的对于Shape图形的增(add/addHover)删(del,delHover)改(mod)查(get/iterShape/getMaxZlevel等)，更像一个数据结构的东西</li>
+    <li>Painter负责真正的绘图操作，这里是比较繁重的部分</li>
+    <ul>
+        <li>1.负责canvas及其周边DOM元素的创建与处理</li>
+        <li>2.负责调用各个Shape（预定义好的）进行绘制</li>
+        <li>3.提供基本的操作方法，渲染(render)、刷新(refresh)、尺寸变化(resize)、擦除(clear)等</li>
+    </ul>
+    <li>Handler负责事件处理，解决基础的浏览器兼容问题、进行事件的注册与转发、拖动</li>
+</ul>
+
+至于附加在ZRender的prototype的其他方法，除了关于动画部分的，其他的都是调用的Storage、Painter、Handler，这里就不再赘述了。
+
+</p>
+<h2>结尾</h2>
+<p>
+    能力有限，尽力而为，接下来，再详尽分析各个小模块吧。
+    大家也可以观摩经过我加工过的更加详细注释的代码 <a href="https://github.com/lonelyclick/nts/tree/master/zrender/src">通往我的GitHub</a>
+</p>
+
+</body>
+</html>

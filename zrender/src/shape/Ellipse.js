@@ -85,6 +85,8 @@ define(
         Ellipse.prototype = {
             type: 'ellipse',
 
+            //http://www.cnblogs.com/shn11160/archive/2012/08/27/2658057.html
+
             /**
              * 创建圆形路径
              * @param {Context2D} ctx Canvas 2D上下文

@@ -196,6 +196,7 @@ define(
             /**
              * 这里判断了一大推参数，来预处理是否需要变形，变形金刚（Transformers）
              * 豆瓣电影：http://movie.douban.com/subject/7054604/
+             * 在最初添加的时候，处理变形开关，就不用在用到的时候重新做了
              */
             if ((params.rotation && Math.abs(params.rotation[0]) > 0.0001)
                 || (params.position
@@ -255,9 +256,9 @@ define(
              *
              * _zElements ->
              * {
-             *      1: {shapeObject,shapeObject},
-             *      2: {shapeObject,shapeObject....},
-             *      3. {...}
+             *      1: [shapeObject,shapeObject],
+             *      2: [shapeObject,shapeObject....],
+             *      3. [...]
              * }
              *
              * 123 为层数

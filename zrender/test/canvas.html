@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<canvas height="1400" width="1400" id="canvasId"></canvas>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var canvasDom = document.getElementById('canvasId'),
+                context = canvasDom.getContext('2d');
+
+        context.lineWidth = 10;
+        context.arc(100, 100, 50, 0, Math.PI * 2);
+        context.stroke();
+
+        context.strokeRect(300,100,200,100);
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html ng-app>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>AngularJS Controller</title>
+</head>
+<body>
+
+<div ng-controller="NameController">
+    <p>{{name}},Angular</p>
+
+    <button ng-click="click()">click me</button>
+</div>
+
+<div ng-controller="ListController">
+    <ul>
+        <li ng-repeat="n in nums">
+            {{n}} -> {{dept}}<br>
+        </li>
+    </ul>
+</div>
+
+
+<script src="../lib/angular-1.3.0.js"></script>
+<script>
+    function NameController($scope, $rootScope) {
+        $scope.name = "something";
+        $rootScope.dept = "something rootScope";
+
+        $scope.click = function () {
+            alert('click');
+        }
+    }
+
+    function ListController($scope) {
+        $scope.nums = [1, 2, 3, 4, 5];
+    }
+</script>
+</body>
+</html>

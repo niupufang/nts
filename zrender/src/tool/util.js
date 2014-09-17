@@ -192,6 +192,9 @@ define(
             return -1;
         }
 
+        // http://blog.csdn.net/justoneroad/article/details/7327805
+        // http://my.oschina.net/antianlu/blog/228267
+
         /**
          * 构造类继承关系
          * 

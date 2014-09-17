@@ -86,6 +86,8 @@ define(
         Rectangle.prototype =  {
             type: 'rectangle',
 
+            // http://jo2.org/html5-canvas-round-rect/
+
             /**
              * 绘制圆角矩形
              * @param {Context2D} ctx Canvas 2D上下文

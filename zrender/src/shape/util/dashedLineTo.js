@@ -4,7 +4,7 @@
  * author:  Kener (@Kener-林峰, linzhifeng@baidu.com)
  *          errorrik (errorrik@gmail.com)
  */
-
+//http://blog.csdn.net/jia20003/article/details/9356383
 define(
     function (/* require */) {
         /**

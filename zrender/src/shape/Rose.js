@@ -74,12 +74,17 @@
        }
    }
  */
+
+// http://xuxzmail.blog.163.com/blog/static/251319162009739563225/
+// http://en.wikipedia.org/wiki/Rose_(mathematics)
+// https://github.com/shimobayashi/rose-curve-canvas/blob/master/index.html
+
 define(
     function (require) {
         var Base = require('./Base');
         
         function Rose(options) {
-            this.brushTypeOnly = 'stroke';  //线条只能描边，填充后果自负
+                this.brushTypeOnly = 'stroke';  //线条只能描边，填充后果自负
             Base.call(this, options);
         }
 

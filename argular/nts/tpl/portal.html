@@ -1,0 +1,20 @@
+<div ng-controller="PortalController">
+
+    {{name}}
+    {{text}}
+    <div hello-directive howToLoad="loadData()">
+        this is inner
+    </div>
+
+    <div superman strength>力量</div>
+    <div superman strength speed>力量 速度</div>
+    <div superman strength speed light>力量 速度 发光</div>
+
+    <div world text={{text}}></div>
+    <div world></div>
+    <div world></div>
+    <div world></div>
+    <div world></div>
+
+    controller中的input:<input type="text" ng-model="text">
+</div>
