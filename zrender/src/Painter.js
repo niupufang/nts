@@ -15,10 +15,6 @@ define(
         var BaseLoadingEffect = require('./loadingEffect/Base');
 
         // retina 屏幕优化
-        /**
-         * see: http://www.myexception.cn/mobile/1489709.html
-         * see: http://www.zhangxinxu.com/wordpress/2012/10/new-pad-retina-devicepixelratio-css-page/
-         */
         var devicePixelRatio = window.devicePixelRatio || 1;
         var vmlCanvasManager = window.G_vmlCanvasManager;
 
@@ -45,6 +41,8 @@ define(
          * @param {storage} storage Storage实例
          */
         function Painter(root, storage) {
+        	window.painter = this;
+        	
             this.root = root;
             this.storage = storage;
 

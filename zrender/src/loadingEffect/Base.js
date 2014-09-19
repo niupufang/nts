@@ -53,7 +53,7 @@ define(
                 highlightStyle : util.merge(
                     {
                         x : this.canvasWidth / 2,
-                        y : this.canvasHeight / 2,
+                        y : this.canvasHeight / 2, //中间
                         text : DEFAULT_TEXT,
                         textAlign : 'center',
                         textBaseline : 'middle',

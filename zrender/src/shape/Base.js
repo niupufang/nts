@@ -217,7 +217,8 @@ define(
          */
         Base.prototype.brush = function (ctx, isHighlight) {
             var style = this.style;
-            
+
+            //比如LineShape，配置的有brushTypeOnly
             if (this.brushTypeOnly) {
                 style.brushType = this.brushTypeOnly;
             }
@@ -236,6 +237,8 @@ define(
             }
 
             ctx.save();
+
+            //根据style设置content对象
             this.setContext(ctx, style);
 
             // 设置transform
@@ -310,14 +313,14 @@ define(
             }
 
             var color = require('../tool/color');
-            var highlightColor = color.getHighlightColor();
+            var highlightColor = color.getHighlightColor(); // rgba(255,255.0.0.5) 半透明黄色
             // 根据highlightStyle扩展
             if (style.brushType != 'stroke') {
                 // 带填充则用高亮色加粗边线
                 newStyle.strokeColor = highlightColor;
                 newStyle.lineWidth = (style.lineWidth || 1)
-                                      + this.getHighlightZoom();
-                newStyle.brushType = 'both';
+                                      + this.getHighlightZoom(); //如果是文字，就是6，如果不是文字，是2
+                newStyle.brushType = 'both'; //如果高亮层并且brushType为both或者fill，强制其为both
             }
             else {
                 if (brushTypeOnly != 'stroke') {

@@ -47,10 +47,10 @@ define(
 
         function _fillText(ctx, text, x, y, textFont, textAlign, textBaseline) {
             if (textFont) {
-                ctx.font = textFont;
+                ctx.font = textFont; //字体
             }
-            ctx.textAlign = textAlign;
-            ctx.textBaseline = textBaseline;
+            ctx.textAlign = textAlign; // 水平对齐方式
+            ctx.textBaseline = textBaseline; // 垂直对齐方式
             var rect = _getTextRect(
                 text, x, y, textFont, textAlign, textBaseline
             );
@@ -261,8 +261,8 @@ define(
             this.setTransform(ctx);
 
             ctx.beginPath();
-            this.buildPath(ctx, style);
-            if (this.brushTypeOnly != 'stroke') {
+            this.buildPath(ctx, style); //模板方法，调用子类的真正实现
+            if (this.brushTypeOnly != 'stroke') { //如果设置了brushTypeOnly===stroke，就不需要closePath了
                 ctx.closePath();
             }
 
@@ -480,23 +480,30 @@ define(
                                || this.textPosition     // shape默认
                                || 'top';                // 全局默认
 
+            /**
+             * 默认为top，线型默认为end，附加文本位置。
+             * inside | left | right | top | bottom | start | end | specific，
+             * 其中start end为线型（如line，brokenline）特有
+             */
+
+
             switch (textPosition) {
                 case 'inside': 
                 case 'top': 
                 case 'bottom': 
                 case 'left': 
                 case 'right': 
-                    if (this.getRect) {
+                    if (this.getRect) { //模板方法，调用子类
                         var rect = (normalStyle || style).__rect
                                    || this.getRect(normalStyle || style);
 
-                        switch (textPosition) {
+                        switch (textPosition) { // al为textAlign，bl为textBaseLine
                             case 'inside':
                                 tx = rect.x + rect.width / 2;
                                 ty = rect.y + rect.height / 2;
                                 al = 'center';
                                 bl = 'middle';
-                                if (style.brushType != 'stroke'
+                                if (style.brushType != 'stroke' //文字颜色和填充色是一样的，进行强制变化颜色 ？
                                     && textColor == style.color
                                 ) {
                                     ctx.fillStyle = '#fff';
@@ -529,7 +536,7 @@ define(
                         }
                     }
                     break;
-                case 'start':
+                case 'start': //其中start end为线型（如line，brokenline）特有
                 case 'end':
                     var xStart;
                     var xEnd;
@@ -593,7 +600,7 @@ define(
                         bl = 'middle';
                     }
                     break;
-                case 'specific':
+                case 'specific': //指定textY和textY
                     tx = style.textX || 0;
                     ty = style.textY || 0;
                     al = 'start';
@@ -602,7 +609,7 @@ define(
             }
 
             if (tx != null && ty != null) {
-                _fillText(
+                _fillText( //调用真正的画图方法
                     ctx,
                     style.text, 
                     tx, ty, 

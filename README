@@ -26,3 +26,4 @@ b.Backbone
     underscore已完，为backbone打下了基础，就剩下开始了
 c.coffeescript
 d.requirejs
+e.zrender源码分析
