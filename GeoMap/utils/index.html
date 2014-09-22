@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<style type="text/css">
+body,html,#allmap {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	margin: 0;
+	font-family: "微软雅黑";
+}
+</style>
+<script type="text/javascript"
+	src="http://api.map.baidu.com/api?v=2.0&ak=GFHDSQ9GnIa7YnPNynng9lRp"></script>
+<title>添加行政区划</title>
+</head>
+<body>
+	<div id="allmap"></div>
+</body>
+</html>
+<script type="text/javascript">
+	function getGeoJSONByRawBaidu(strs) {
+		var ret = [];
+
+		for ( var i = 0, len = strs.length; i < len; i++) {
+
+			var str = strs[i], r = [];
+
+			str.split(';').forEach(function(ele) {
+				var e = ele.split(', ');
+
+				r.push([ e[0] * 1, e[1] * 1 ]);
+			});
+
+			ret.push(r);
+		}
+
+		return ret;
+	}
+
+	function makeGeoJSON(rets, baseId) {
+		var ret = {
+			"type" : "FeatureCollection",
+			"features" : []
+		};
+
+		for ( var area in rets) {
+			var data = rets[area];
+
+			ret.features.push({
+				"type" : "Feature",
+				"id" : baseId++ + '',
+				"properties" : {
+					"name" : area,
+					//"cp" : [ 116.3123, 31.8329 ],
+					"childNum" : data.length
+				},
+				"geometry" : {
+					"type" : "Polygon",
+					"coordinates" : data
+				}
+			});
+		}
+
+		return ret;
+	}
+
+	document.addEventListener('DOMContentLoaded', function() {
+
+		// 百度地图API功能
+		var map = new BMap.Map("allmap");
+		map.centerAndZoom(new BMap.Point(116.403765, 39.914850), 5);
+		map.enableScrollWheelZoom();
+
+		var areas = [ '驿城区', '确山县', '泌阳县', '遂平县', '西平县', '上蔡县', '汝南县', '平舆县 ',
+				'正阳县', '新蔡县' ]; 
+
+		var areas = [ '北京', '天津', '河北', '山西', '内蒙古', '河南省', '安徽', '辽宁', '吉林',
+				'黑龙江', '上海', '江苏', '浙江', '福建', '江西', '山东', '湖北', '湖南',
+				'广东', '广西', '海南', '重庆', '四川', '贵州省', '云南', '西藏', '陕西', '甘肃省',
+				'青海', '宁夏', '新疆', '香港', '澳门' ]; 
+
+		var rets = {}, curr = 0;
+
+		areas.forEach(function(area) {
+			var bdary = new BMap.Boundary();
+			bdary.get(area, function(rs) { //获取行政区域
+				map.clearOverlays(); //清除地图覆盖物       
+
+				console.log(area, rs.boundaries[0] && rs.boundaries[0].length);
+
+				rets[area] = getGeoJSONByRawBaidu(rs.boundaries);
+
+				if (++curr === areas.length) {
+					var geoJSON = makeGeoJSON(rets, 1000);
+					console.log(JSON.stringify(geoJSON));
+				}
+			});
+		});
+
+	});
+</script>

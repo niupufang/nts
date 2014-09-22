@@ -2,8 +2,6 @@
     "name": "application-name",
     "version": "0.0.1",
     "dependencies": {
-        "mime": "~1.2.11",
-        "socket.io": "~1.0.6",
-        "node-inspector":"~0.7.4"
+        "mime": "~1.2.11"
     }
 }

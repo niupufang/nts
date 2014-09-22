@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GeoMap Demo1</title>
+</head>
+<body>
+	<div id="box" style="width: 800px; height: 600px;"></div>
+	<script type="text/javascript" src="../jquery/jquery-2.1.1.js"></script>
+	<script type="text/javascript" src="raphael-min.js"></script>
+	<script type="text/javascript" src="geomap-0.5.4.js"></script>
+	<script>
+		$(function() {
+			var geoMap = new GeoMap({
+				container : '#box'
+			});
+			$.get('json/china.geo.json', function(data) {
+				geoMap.load(data);
+				geoMap.render();
+
+				/* geoMap.shapes.forEach(function(v) {
+					//随机颜色
+					color = '#' + Math.random().toString(16).substring(2, 8);
+					if (7 - color.length != 0) {
+						color += Math.random().toString(16).substring(2,
+								9 - color.length);
+					}
+
+					//给区域上色
+					v.attr('fill', color);
+				}); */
+				
+				geoMap.shapes.mousemove(function(e){
+					e = $.event.fix(e);
+					var self = this,
+						top = e.pageY,
+						left = e.pageX,
+						box = geoMap.container.offset(),
+						boxTop = top - box.top,
+						boxLeft = left - box.left,
+						//获取鼠标位置的实际经纬度
+						pos = geoMap.getGeoPosition([boxLeft, boxTop]);
+					console.log(self.data('properties').name,pos);
+				});
+			});
+		});
+	</script>
+</body>
+</html>
